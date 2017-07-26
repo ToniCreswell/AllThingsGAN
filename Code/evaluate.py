@@ -1,7 +1,9 @@
 # functions in here are used for evluatin the models
+import numpy as np
+from skimage.io import imsave
 
 
-def montage_RGB(samples, width, height, rows, cols):
+def montage_RGB(samples, rows, cols):
 	"""
 
 	Parameters
@@ -10,11 +12,11 @@ def montage_RGB(samples, width, height, rows, cols):
 	samples: np-ndarray
 		image samples in a tensor with shape (N,3,width,heigh)
 
-	width: int
-		width of image samples
+	rows: int
+		no of rows of samples
 
-	height: int
-		height of images samples
+	cols: int
+		no of cols of samples
 	"""
 	assert samples.shape[0] > rows*cols, "less samples than row * cols"
 
@@ -26,6 +28,7 @@ def montage_RGB(samples, width, height, rows, cols):
 		montage.append(col)
 	montage = np.vstack(montage)
 	print np.shape(montage)
+	
 	return montage
 
 
