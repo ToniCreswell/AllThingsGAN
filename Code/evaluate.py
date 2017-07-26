@@ -2,6 +2,7 @@
 import numpy as np
 from skimage.io import imsave
 import theano
+import os
 
 floatX = theano.config.floatX
 
