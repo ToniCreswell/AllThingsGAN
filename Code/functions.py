@@ -42,3 +42,11 @@ def load_CelebA():
 
 	print 'CelebA: shape:', np.shape(data), 'min:', data.min() ,'max:', data.max()
 	return data
+
+
+def print_layers(nn, nn_prefix='nn'):
+	nn_layers = get_all_layers(nn)
+	l = 0
+	for i, layer in enumerate(nn_layers):
+		label = '{0}'.format(layer.__class__.__name__)
+		print('{:11s} {} : {:25s} - shape : {} '.format(nn_prefix[:10], i,label[:25], get_output_shape(nn_layers[i])))
