@@ -4,7 +4,7 @@ from lasagne.nonlinearities import LeakyRectify as lrelu
 from lasagne.nonlinearities import sigmoid
 
 
-def get_gen(nz=100):
+def get_gen_celebA(nz=100):
 	gen = InputLayer(shape=(None,nz))
 	gen = DenseLayer(incoming=gen, num_units=1024*4*4)
 	gen = reshape(incoming=gen, shape=(-1,1024,4,4))
@@ -15,7 +15,7 @@ def get_gen(nz=100):
 
 	return gen
 
-def get_dis(nz=100):
+def get_dis_celebA(nz=100):
 	dis = InputLayer(shape=(None,3,64,64))
 	dis = batch_norm(Conv2DLayer(incoming=dis, num_filters=128, filter_size=5,stride=2, nonlinearity=lrelu(0.2),pad=2))
 	dis = batch_norm(Conv2DLayer(incoming=dis, num_filters=256, filter_size=5,stride=2, nonlinearity=lrelu(0.2),pad=2))

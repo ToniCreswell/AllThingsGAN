@@ -16,8 +16,8 @@ from matplotlib import pyplot as plt
 
 from skimage.io import imsave
 
-from functions import get_args, load_CelebA
-from nets import get_gen, get_dis
+from functions import get_args, load_CelebA, print_layers
+from nets import get_gen_celebA, get_dis_celeA
 
 import os
 
@@ -26,8 +26,8 @@ floatX=theano.config.floatX
 
 def build_net(nz=100):
 	# nz = size of latent code
-	gen = get_gen(nz=nz)
-	dis = get_dis(nz=nz)
+	gen = get_gen_celebA(nz=nz)
+	dis = get_dis_celeA(nz=nz)
 
 	return gen, dis
 
@@ -121,17 +121,14 @@ def test(G):
 
 
 if __name__ == '__main__':
-
-	# Print layers
-	def print_layers(nn, nn_prefix='nn'):
-	    nn_layers = get_all_layers(nn)
-	    l = 0
-	    for i, layer in enumerate(nn_layers):
-	        label = '{0}'.format(layer.__class__.__name__)
-	        print('{:11s} {} : {:25s} - shape : {} '.format(nn_prefix[:10], i,label[:25], get_output_shape(nn_layers[i])))
-	# example: print_layers(gen, nn_prefix='generator')
-
 	opts = get_args()
+
+	#print the layers out with sizes
+	if opts.printLayers:
+		G,D=build_net(nz=opts.nz)
+		print_layers(G, nn_prefix='generator')
+		print_layers(D, nn_prefix='discriminator')
+
 	G,D=train(nz=opts.nz, lr=opts.lr, batchSize=opts.batchSize, epoch=opts.maxEpochs)
 
 
