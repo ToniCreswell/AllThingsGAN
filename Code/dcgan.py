@@ -68,7 +68,8 @@ def prep_train(lr=0.0002, nz=100):
 	train_fns['dis']=theano.function(inputs=[x,z], outputs=J_D, updates=update_D)
 
 	#theano test functions
-	test_fns={'sample', 'other'}
+	test_fns={}
+	test_fns['other']=[]
 	test_fns['sample']=theano.function(inputs=[z],outputs=samples)
 
 	return train_fns, test_fns, G, D
@@ -130,7 +131,7 @@ if __name__ == '__main__':
 		print_layers(G, nn_prefix='generator')
 		print_layers(D, nn_prefix='discriminator')
 
-	G,D, train_fns, test_fns = train(nz=opts.nz, lr=opts.lr, batchSize=opts.batchSize, epoch=opts.maxEpochs \
+	train_fns, test_fns, G, D = train(nz=opts.nz, lr=opts.lr, batchSize=opts.batchSize, epoch=opts.maxEpochs \
 		, outDir=opts.outDir)
 
 	print test_fns['sample']
