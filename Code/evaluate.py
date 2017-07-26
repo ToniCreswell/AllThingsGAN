@@ -26,7 +26,7 @@ def montage_RGB(samples, rows=5, cols=5):
 	print np.shape(samples)
 	montage=[]
 	for i in range(rows):
-		col = samples[i*cols:(i+1)*cols].transpose(1,2,0)
+		col = samples[i*cols:(i+1)*cols].transpose(0,2,3,1)
 		col = np.hstack(col)
 		print np.shape(col)
 		montage.append(col)
