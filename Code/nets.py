@@ -1,6 +1,8 @@
 """
-All current networks to be used for the Generative Adversarial Models
+All current networks to be used for the Adversarial Models
 """
+
+################################## dcgan Nets ##################################
 
 from lasagne.layers import InputLayer, DenseLayer, Conv2DLayer, Deconv2DLayer, flatten, reshape, batch_norm, Upscale2DLayer
 from lasagne.nonlinearities import rectify as relu
@@ -64,3 +66,37 @@ def get_dis_celebA(nz=100):
 	dis = reshape(incoming=dis, shape=(-1,1024*4*4))
 	dis = DenseLayer(incoming=dis, num_units=1, nonlinearity=sigmoid)
 	return dis
+
+################################## cAAE Nets ##################################
+
+def get_enc_MNIST():
+	# image --> encoding
+	enc = InputLayer((None, 28*28))
+	enc = DenseLayer(incoming=enc, num_units=1000, nonlinearity=relu)
+	enc = DenseLayer(incoming=enc, num_units=1000, nonlinearity=relu)
+	return enc
+
+
+def get_Zenc_MNIST(nz=100):
+	#encoding --> latent rep
+	Zenc = InputLayer((None, 1000))
+	Zenc = DenseLayer(incoming=Zenc, num_units=nz, nonlinearity=None)
+	return Zenc
+
+
+def get_Yenc_MIST():
+	#encoding --> label vector
+	Yenc = InputLayer((None, 1000))
+	Yenc = DenseLayer(incoming=Yenc, num_units=10, nonlinearity=softmax)  #10 labels
+	return Yenc
+
+def get_dec_MNIST(nz=100):
+	#[latent , label] --> sample
+	dec = InputLayer((None, nz+10))
+	dec = DenseLayer(incoming=dec, num_units=1000, nonlinearity=relu)
+	dec = DenseLayer(incoming=dec, num_units=1000, nonlinearity=relu)
+	dec = DenseLayer(incoming=dec, num_units=28*28, nonlinearity=sigmoid)
+	return dec
+
+
+

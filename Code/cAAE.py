@@ -30,6 +30,7 @@ import os, sys
 floatX=theano.config.floatX
 
 from functions import get_args, load_MNIST
+from nets import get_enc_MNIST
 
 import argparse
 
@@ -51,23 +52,16 @@ class opts(object):
 
 def build_nets(opts):
 	# image --> encoding
-	enc = InputLayer((None, opts.imSize))
-	enc = DenseLayer(incoming=enc, num_units=1000, nonlinearity=relu)
-	enc = DenseLayer(incoming=enc, num_units=1000, nonlinearity=relu)
+	enc = get_enc_MNIST()
 
-	#encoding --> latent rep
-	Zenc = InputLayer((None, 1000))
-	Zenc = DenseLayer(incoming=Zenc, num_units=opts.nz, nonlinearity=None)
+	# encoding --> latent rep
+	Zenc = get_Zenc_MNIST(nz=opts.nz)
 	
 	#encoding --> label vector
-	Yenc = InputLayer((None, 1000))
-	Yenc = DenseLayer(incoming=Yenc, num_units=10, nonlinearity=softmax)  #10 labels
+	Yenc = get_Yenc_MNIST()
 
 	#[latent , label] --> sample
-	dec = InputLayer((None, opts.nz+10))
-	dec = DenseLayer(incoming=dec, num_units=1000, nonlinearity=relu)
-	dec = DenseLayer(incoming=dec, num_units=1000, nonlinearity=relu)
-	dec = DenseLayer(incoming=dec, num_units=opts.imSize, nonlinearity=sigmoid)
+	dec = get_dec_MNIST(nz=opts.nz)
 
 	# z --> real or fake
 	disZ = InputLayer((None, opts.nz))
