@@ -98,5 +98,29 @@ def get_dec_MNIST(nz=100):
 	dec = DenseLayer(incoming=dec, num_units=28*28, nonlinearity=sigmoid)
 	return dec
 
+def get_disZ_MNIST(nz=100):
+	# z --> real or fake
+	disZ = InputLayer((None, nz))
+	disZ = DenseLayer(incoming=disZ, num_units=1000, nonlinearity=relu)
+	disZ = DenseLayer(incoming=disZ, num_units=1000, nonlinearity=relu)
+	disZ = DenseLayer(incoming=disZ, num_units=1, nonlinearity=sigmoid)
+	return disZ
+
+def get_disY_MNIST():
+	# y --> real or fake
+	disY = InputLayer((None, 10))
+	disY = DenseLayer(incoming=disY, num_units=1000, nonlinearity=relu)
+	disY = DenseLayer(incoming=disY, num_units=1000, nonlinearity=relu)
+	disY = DenseLayer(incoming=disY, num_units=1, nonlinearity=sigmoid)
+	return disY
+
+
+
+
+
+
+
+
+
 
 

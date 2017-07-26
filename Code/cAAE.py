@@ -64,16 +64,11 @@ def build_nets(opts):
 	dec = get_dec_MNIST(nz=opts.nz)
 
 	# z --> real or fake
-	disZ = InputLayer((None, opts.nz))
-	disZ = DenseLayer(incoming=disZ, num_units=1000, nonlinearity=relu)
-	disZ = DenseLayer(incoming=disZ, num_units=1000, nonlinearity=relu)
-	disZ = DenseLayer(incoming=disZ, num_units=1, nonlinearity=sigmoid)
+	disZ = get_disZ_MNIST(nz=opts.nz)
+
 
 	# y --> real or fake
-	disY = InputLayer((None, 10))
-	disY = DenseLayer(incoming=disY, num_units=1000, nonlinearity=relu)
-	disY = DenseLayer(incoming=disY, num_units=1000, nonlinearity=relu)
-	disY = DenseLayer(incoming=disY, num_units=1, nonlinearity=sigmoid)
+	disY = get_disY_MNIST()
 
 	return enc, Zenc, Yenc, dec, disZ, disY
 
