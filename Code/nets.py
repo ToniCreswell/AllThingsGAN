@@ -84,7 +84,7 @@ def get_Zenc_MNIST(nz=100):
 	return Zenc
 
 
-def get_Yenc_MIST():
+def get_Yenc_MNIST():
 	#encoding --> label vector
 	Yenc = InputLayer((None, 1000))
 	Yenc = DenseLayer(incoming=Yenc, num_units=10, nonlinearity=softmax)  #10 labels
