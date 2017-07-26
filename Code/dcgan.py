@@ -105,12 +105,12 @@ def train(nz=100, lr=0.0002, batchSize=64, epoch=10, outDir='../Experiments/dcga
 			d_cost.append(cost_D)
 
 
-	# #save plot of the cost
-	# plt.plot(range(batches*epoch),g_cost, label="G")
-	# plt.plot(range(batches*epoch),d_cost, label="D")
-	# plt.legend()
-	# plt.xlabel('epoch')
-	# plt.savefig(os.path.join(opts.outDir,'/cost_regular.png'))
+	#save plot of the cost
+	plt.plot(range(batches*epoch),g_cost, label="G")
+	plt.plot(range(batches*epoch),d_cost, label="D")
+	plt.legend()
+	plt.xlabel('epoch')
+	plt.savefig(os.path.join(opts.outDir,'/cost_regular.png'))
 
 	return train_fns, test_fns, G, D
 
@@ -130,7 +130,7 @@ if __name__ == '__main__':
 		print_layers(G, nn_prefix='generator')
 		print_layers(D, nn_prefix='discriminator')
 
-	G,D, train_fns, test_fns =train(nz=opts.nz, lr=opts.lr, batchSize=opts.batchSize, epoch=opts.maxEpochs \
+	G,D, train_fns, test_fns = train(nz=opts.nz, lr=opts.lr, batchSize=opts.batchSize, epoch=opts.maxEpochs \
 		, outDir=opts.outDir)
 
 	print test_fns['sample']
