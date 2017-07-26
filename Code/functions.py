@@ -11,7 +11,7 @@ floatX = theano.config.floatX
 def get_args():
 	parser = argparse.ArgumentParser()
 	parser.add_argument('--outDir', default='../Experiments/dcgan', type=str)
-	parser.add_argument('--maxEpochs', default=10, type=int) 
+	parser.add_argument('--maxEpochs', default=1, type=int) 
 	parser.add_argument('--lr', default=1e-3, type=float)  #learning rate
 	parser.add_argument('--batchSize', default=64, type=int)
 	parser.add_argument('--printLayers', action= 'store_true')
