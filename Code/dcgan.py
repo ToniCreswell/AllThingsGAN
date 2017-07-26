@@ -1,9 +1,10 @@
 #DCGAN Using Lasagne (for CelebA)
-from lasagne.layers import InputLayer, DenseLayer, Conv2DLayer, Deconv2DLayer, flatten, reshape, batch_norm, Upscale2DLayer
+from lasagne.layers import InputLayer, DenseLayer, Conv2DLayer, Deconv2DLayer, \
+flatten, reshape, batch_norm, Upscale2DLayer
 from lasagne.nonlinearities import rectify as relu
 from lasagne.nonlinearities import LeakyRectify as lrelu
 from lasagne.nonlinearities import sigmoid
-from lasagne.layers import get_output, get_all_params, get_output_shape
+from lasagne.layers import get_output, get_all_params, get_output_shape, get_all_layers
 from lasagne.objectives import binary_crossentropy as bce
 from lasagne.updates import adam
 
@@ -16,6 +17,7 @@ from matplotlib import pyplot as plt
 from skimage.io import imsave
 
 from functions import get_args, load_CelebA
+from nets import get_gen, get_dis
 
 import os
 
@@ -24,23 +26,8 @@ floatX=theano.config.floatX
 
 def build_net(nz=100):
 	# nz = size of latent code
-	#N.B. using batch_norm applies bn before non-linearity!
-	#Generator networks
-	gen = InputLayer(shape=(None,nz))
-	gen = DenseLayer(incoming=gen, num_units=1024*4*4)
-	gen = reshape(incoming=gen, shape=(-1,1024,4,4))
-	gen = batch_norm(Deconv2DLayer(incoming=gen, num_filters=512, filter_size=4, stride=2, nonlinearity=relu, crop=1))
-	gen = batch_norm(Deconv2DLayer(incoming=gen, num_filters=256, filter_size=4, stride=2, nonlinearity=relu, crop=1))
-	gen = batch_norm(Deconv2DLayer(incoming=gen, num_filters=128, filter_size=4, stride=2, nonlinearity=relu, crop=1))
-	gen = Deconv2DLayer(incoming=gen, num_filters=3, filter_size=4, stride=2, nonlinearity=sigmoid, crop=1)
-
-	dis = InputLayer(shape=(None,3,64,64))
-	dis = batch_norm(Conv2DLayer(incoming=dis, num_filters=128, filter_size=5,stride=2, nonlinearity=lrelu(0.2),pad=2))
-	dis = batch_norm(Conv2DLayer(incoming=dis, num_filters=256, filter_size=5,stride=2, nonlinearity=lrelu(0.2),pad=2))
-	dis = batch_norm(Conv2DLayer(incoming=dis, num_filters=512, filter_size=5,stride=2, nonlinearity=lrelu(0.2),pad=2)) 
-	dis = batch_norm(Conv2DLayer(incoming=dis, num_filters=1024, filter_size=5,stride=2, nonlinearity=lrelu(0.2),pad=2)) 
-	dis = reshape(incoming=dis, shape=(-1,1024*4*4))
-	dis = DenseLayer(incoming=dis, num_units=1, nonlinearity=sigmoid)
+	gen = get_gen(nz=nz)
+	dis = get_dis(nz=nz)
 
 	return gen, dis
 
@@ -133,6 +120,14 @@ opts = get_args()
 print opts
 
 x_train=load_CelebA()
+gen, dis = build_net()
+for l in get_all_layers(gen):
+	print get_output_shape(l)
+for l in get_all_layers(dis):
+	print get_output_shape(l)
+
+
+
 # G,D=train(x_train)
 # G_Z=test(G).eval()
 
