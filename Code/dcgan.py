@@ -15,13 +15,10 @@ from matplotlib import pyplot as plt
 
 from skimage.io import imsave
 
+from functions import get_args, loadData
+
 floatX=theano.config.floatX
 
-def get_args():
-	print 'getting args...'
-
-def save_args():
-	print 'saving args...'
 
 def build_net(nz=100):
 	# nz = size of latent code
@@ -132,37 +129,32 @@ def test(G):
 	G_Z=get_output(G,Z)
 	return G_Z
 
-def loadData():
-    try:
-        path='../../InData/celeba.npy'
-        data=np.load(path,mmap_mode='r').astype(floatX)
-    except:
-        data=np.load('celeba.npy',mmap_mode='r').astype(floatX)
-    print 'Data min and max:',data.min(), data.max()
-    return data
 
-x_train=loadData()
-G,D=train(x_train)
-G_Z=test(G).eval()
+opts = get_args()
+print opts
 
-#see if the output images look good:
-imsave('testOutputs/text.png',G_Z[0].transpose(1,2,0))
-sn,sc,sx,sy=np.shape(x_train)
-montage=np.ones(shape=(10*sx,10*sy,3))
+# x_train=loadData()
+# G,D=train(x_train)
+# G_Z=test(G).eval()
 
-n=0
-x=0
-y=0
-for i in range(10):
-    for j in range(10):
-        im=G_Z[n,:,:,:].swapaxes(0, 2)
-        n+=1
-        montage[x:x+sx,y:y+sy,:]=im
-        x+=sx
-    x=0
-    y+=sy
-print 'montage:',np.shape(montage)
-imsave('testOutputs/montage.png',montage)
+# #see if the output images look good:
+# imsave('testOutputs/text.png',G_Z[0].transpose(1,2,0))
+# sn,sc,sx,sy=np.shape(x_train)
+# montage=np.ones(shape=(10*sx,10*sy,3))
+
+# n=0
+# x=0
+# y=0
+# for i in range(10):
+#     for j in range(10):
+#         im=G_Z[n,:,:,:].swapaxes(0, 2)
+#         n+=1
+#         montage[x:x+sx,y:y+sy,:]=im
+#         x+=sx
+#     x=0
+#     y+=sy
+# print 'montage:',np.shape(montage)
+# imsave('testOutputs/montage.png',montage)
 
 
 
