@@ -209,8 +209,7 @@ def train(nz=100, lr=0.0002, batchSize=64, epoch=10, outDir='../Experiment/dcgan
 	plt.plot(range(batches*epoch),d_cost, label="D")
 	plt.legend()
 	plt.xlabel('epoch')
-	print os.path.join(outDir,'/cost_regular.png')
-	plt.savefig(os.path.join(outDir,'/cost_regular.png'))
+	plt.savefig(os.path.join(outDir,'cost_regular.png'))
 
 	return train_fns, test_fns, G, D
 
@@ -227,7 +226,6 @@ if __name__ == '__main__':
 	train_fns, test_fns, G, D = train(nz=opts.nz, lr=opts.lr, batchSize=opts.batchSize, epoch=opts.maxEpochs \
 		, outDir=opts.outDir)
 
-	print test_fns['sample']
 	montage = eval_gen(test_fns['sample'], opts.nz, opts.outDir)
 
 
