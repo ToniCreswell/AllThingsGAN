@@ -1,6 +1,11 @@
 import argparse
 import numpy as np
 import cPickle
+import gzip, zipfile
+import os
+
+import theano
+floatX = theano.config.floatX
 
 def get_args():
 	parser = argparse.ArgumentParser()
@@ -24,9 +29,15 @@ def load_MNIST(opts):
 
 def load_CelebA():
 	print('Loading celebA data...')
-	f = gzip.open('../InData/celeba.npy.gz', 'rb')
-	data=cPickle.load(f,mmap_mode='r').astype(floatX)
-    print 'CelebA: shape:', np.shape(data), 'min:', data.min(), ,'max:' data.max()
-    return data
+	inDir='../InData/celeba.npy'
+
+	if not os.path.exists(inDir):
+		zip = zipfile.ZipFile(inDir+'.zip')
+		zip.extractall('../InData/')
+
+	data=np.load(inDir,mmap_mode='r').astype(floatX)
+
+	print 'CelebA: shape:', np.shape(data), 'min:', data.min() ,'max:', data.max()
+	return data
 
 
