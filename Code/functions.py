@@ -1,5 +1,5 @@
 """
-Current functions to be called in different codes 
+Usual functions to be called 
 """
 
 import argparse
