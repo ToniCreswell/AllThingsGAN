@@ -32,7 +32,7 @@ def build_net(nz=100):
 	return gen, dis
 
 
-def prep_train(alpha=0.0002, nz=100):
+def prep_train(lr=0.0002, nz=100):
 	G,D=build_net(nz=nz)
 
 	x = T.tensor4('x')
@@ -43,6 +43,7 @@ def prep_train(alpha=0.0002, nz=100):
 	D_G_z=get_output(D,G_z)
 	D_x=get_output(D,x)
 
+	# test samples
 	samples=get_output(G,z,deterministic=True)
 
 	#Get parameters of G and D
@@ -56,35 +57,37 @@ def prep_train(alpha=0.0002, nz=100):
 	grad_d=T.grad(J_D,params_d)
 	grad_g=T.grad(J_G,params_g)
 
-	update_D = adam(grad_d,params_d, learning_rate=alpha)
-	update_G = adam(grad_g,params_g, learning_rate=alpha)
+	update_D = adam(grad_d,params_d, learning_rate=lr)
+	update_G = adam(grad_g,params_g, learning_rate=lr)
 
 	#theano train functions
-	train_G=theano.function(inputs=[z], outputs=J_G, updates=update_G)
-	train_D=theano.function(inputs=[x,z], outputs=J_D, updates=update_D)
+	train_fns={}
+	train_fns['gen']=theano.function(inputs=[z], outputs=J_G, updates=update_G)
+	train_fns['dis']=theano.function(inputs=[x,z], outputs=J_D, updates=update_D)
 
 	#theano test functions
-	test_G=theano.function(inputs=[z],outputs=samples)
+	test_fns={}
+	test_fns['sample']=theano.function(inputs=[z],outputs=samples)
 
-	return train_G, train_D, test_G, G, D
+	return train_fns, test_fns, G, D
 
-def train(trainData, nz=100, alpha=0.001, batchSize=64, epoch=10):
-	train_G, train_D, test_G, G, D = prep_train(nz=nz, alpha=alpha)
+def train(nz=100, lr=0.001, batchSize=64, epoch=10):
+
+
+	xTrain = load_CelebA()
+	train_fns, test_fns, G, D = prep_train(nz=nz, lr=lr)
+
 	sn,sc,sx,sy=np.shape(trainData)
-	print sn,sc,sx,sy
 	batches=int(np.floor(float(sn)/batchSize))
 
 	#keep training info
 	g_cost=[]
 	d_cost=[]
 
-	print 'batches=',batches
-
 	timer=time.time()
 	#Train D (outerloop)
 	print 'epoch \t batch \t cost G \t\t cost D \t\t time (s)'
 	for e in range(epoch):
-		#random re-order of data (no doing for now cause slow)
 		#Do for all batches
 		for b in range(batches):
 			for k in range(1):
@@ -116,19 +119,13 @@ def test(G):
 	return G_Z
 
 
-opts = get_args()
-print opts
 
-x_train=load_CelebA()
-gen, dis = build_net()
-for l in get_all_layers(gen):
-	print get_output_shape(l)
-for l in get_all_layers(dis):
-	print get_output_shape(l)
+if __name__ == '__main__':
+	opts = get_args()
+	G,D=train(nz=opts.nz, lr=opts.lr, batchSize=opts.batchSize, epoch=opts.maxEpochs)
 
 
 
-# G,D=train(x_train)
 # G_Z=test(G).eval()
 
 # #see if the output images look good:
