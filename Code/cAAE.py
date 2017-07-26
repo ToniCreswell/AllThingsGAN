@@ -49,14 +49,6 @@ class opts(object):
 		self.maxEpochs= args.maxEpochs
 
 
-#function to load data
-def load_data(opts):
-	dataDir = opts.inDir
-	train,test,val = np.load(dataDir,mmap_mode='r')
-
-	return train[0].astype(floatX), train[1], test[0].astype(floatX), test[1], val[0].astype(floatX), val[1]
-
-
 def build_nets(opts):
 	# image --> encoding
 	enc = InputLayer((None, opts.imSize))
@@ -191,7 +183,7 @@ def Pz(noSamples, nz=10):
 def train(opts):
 
 	train_fns, test_fns = prep_train(opts)
-	x_train, y_train, x_test, y_test, x_val, y_val =load_data(opts)
+	x_train, y_train, x_test, y_test, x_val, y_val =load_MNIST(opts)
 
 	print 'Training data loaded: no test healthy images=',np.sum(y_test), '. no unhealthy images=', y_test.shape[0]-np.sum(y_test)
 
