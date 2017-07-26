@@ -121,6 +121,16 @@ def test(G):
 
 
 if __name__ == '__main__':
+
+	# Print layers
+	def print_layers(nn, nn_prefix='nn'):
+	    nn_layers = get_all_layers(nn)
+	    l = 0
+	    for i, layer in enumerate(nn_layers):
+	        label = '{0}'.format(layer.__class__.__name__)
+	        print('{:11s} {} : {:25s} - shape : {} '.format(nn_prefix[:10], i,label[:25], get_output_shape(nn_layers[i])))
+	# example: print_layers(gen, nn_prefix='generator')
+
 	opts = get_args()
 	G,D=train(nz=opts.nz, lr=opts.lr, batchSize=opts.batchSize, epoch=opts.maxEpochs)
 
