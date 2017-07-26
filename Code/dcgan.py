@@ -74,7 +74,7 @@ def prep_train(lr=0.0002, nz=100):
 
 	return train_fns, test_fns, G, D
 
-def train(nz=100, lr=0.0002, batchSize=64, epoch=10, outDir='../Experiments/dcgan'):
+def train(nz=100, lr=0.0002, batchSize=64, epoch=10, outDir='../Experiment/dcgan'):
 
 	xTrain= load_CelebA()
 	train_fns, test_fns, G, D = prep_train(nz=nz, lr=lr)
