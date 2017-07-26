@@ -1,4 +1,6 @@
 import argparse
+import numpy as np
+import cPickle
 
 def get_args():
 	parser = argparse.ArgumentParser()
@@ -21,7 +23,10 @@ def load_MNIST(opts):
 
 
 def load_CelebA():
-    data=np.load('../InData/celeba.npy',mmap_mode='r').astype(floatX)
+	print('Loading celebA data...')
+	f = gzip.open('../InData/celeba.npy.gz', 'rb')
+	data=cPickle.load(f,mmap_mode='r').astype(floatX)
+    print 'CelebA: shape:', np.shape(data), 'min:', data.min(), ,'max:' data.max()
     return data
 
 
