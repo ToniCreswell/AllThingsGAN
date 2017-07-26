@@ -23,6 +23,7 @@ def montage_RGB(samples, rows=5, cols=5):
 	"""
 	assert samples.shape[0] >= rows*cols, "less samples than row * cols"
 
+	print np.shape(samples)
 	montage=[]
 	for i in range(rows):
 		col = samples[i*cols:(i+1)*cols].transpose(1,2,0)
