@@ -2,8 +2,7 @@ import argparse
 
 def get_args():
 	parser = argparse.ArgumentParser()
-	parser.add_argument('--inDir', default='../InData/mnist.pkl.gz', type=str)
-	parser.add_argument('--outDir', default='../ExpMOLES', type=str)
+	parser.add_argument('--outDir', default='../Experiments/dcgan', type=str)
 	parser.add_argument('--maxEpochs', default=10, type=int) 
 	parser.add_argument('--lr', default=1e-3, type=float)  #learning rate
 	parser.add_argument('--batchSize', default=64, type=int)
