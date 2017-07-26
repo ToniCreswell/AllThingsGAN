@@ -18,7 +18,7 @@ from skimage.io import imsave
 
 from functions import get_args, load_CelebA, print_layers
 from nets import get_gen_celebA, get_dis_celebA
-from eval import eval_gen
+from evaluate import eval_gen
 
 import os
 
