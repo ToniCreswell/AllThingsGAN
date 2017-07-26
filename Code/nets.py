@@ -11,7 +11,7 @@ def get_gen(nz=100):
 	gen = batch_norm(Deconv2DLayer(incoming=gen, num_filters=512, filter_size=4, stride=2, nonlinearity=relu, crop=1))
 	gen = batch_norm(Deconv2DLayer(incoming=gen, num_filters=256, filter_size=4, stride=2, nonlinearity=relu, crop=1))
 	gen = batch_norm(Deconv2DLayer(incoming=gen, num_filters=128, filter_size=4, stride=2, nonlinearity=relu, crop=1))
-	gen = Deconv2DLayer(incoming=gen, num_filters=3, filter_size=4, stride=2, nonlinearity=sigmoid, crop=1)
+	gen = Deconv2DLayer(incoming=gen, num_filters=3, filter_size=4, stride=2, nonlinearity=sigmoid crop=1)
 
 	return gen
 
@@ -22,5 +22,5 @@ def get_dis(nz=100):
 	dis = batch_norm(Conv2DLayer(incoming=dis, num_filters=512, filter_size=5,stride=2, nonlinearity=lrelu(0.2),pad=2)) 
 	dis = batch_norm(Conv2DLayer(incoming=dis, num_filters=1024, filter_size=5,stride=2, nonlinearity=lrelu(0.2),pad=2)) 
 	dis = reshape(incoming=dis, shape=(-1,1024*4*4))
-	dis = DenseLayer(incoming=dis, num_units=1, nonlinearity=sigmoid)
+	dis = DenseLayer(incoming=dis, num_units=1, nonlinearity=None)
 	return dis
