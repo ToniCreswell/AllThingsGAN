@@ -90,7 +90,7 @@ def train(nz=100, lr=0.0002, batchSize=64, epoch=10, outDir='../Experiments/dcga
 	print 'epoch \t batch \t cost G \t\t cost D \t\t time (s)'
 	for e in range(epoch):
 		#Do for all batches
-		for b in range(10):#batches):
+		for b in range(batches):
 			for k in range(1):
 				Z = np.random.normal(loc=0.0, scale=1.0, size=(sn,nz)).astype(floatX) #Normal prior, P(Z)
 				#Go through one batch
