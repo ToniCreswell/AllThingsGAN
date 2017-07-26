@@ -107,13 +107,12 @@ def train(nz=100, lr=0.0002, batchSize=64, epoch=10, outDir='../Experiment/dcgan
 
 
 	#save plot of the cost
-	fig1 = plt.figure()
 	plt.plot(range(batches*epoch),g_cost, label="G")
 	plt.plot(range(batches*epoch),d_cost, label="D")
 	plt.legend()
 	plt.xlabel('epoch')
 	print os.path.join(outDir,'/cost_regular.png')
-	fig1.savefig(os.path.join(outDir,'/cost_regular.png'))
+	plt.savefig(os.path.join(outDir,'/cost_regular.png'))
 
 	return train_fns, test_fns, G, D
 
