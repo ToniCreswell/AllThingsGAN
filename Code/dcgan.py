@@ -125,6 +125,7 @@ def test(G):
 
 if __name__ == '__main__':
 	opts = get_args()
+	print 'outDir:', opts.outDir
 
 	#print the layers out with sizes
 	if opts.printLayers:
