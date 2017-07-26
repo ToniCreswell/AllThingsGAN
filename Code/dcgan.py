@@ -93,7 +93,7 @@ def train(nz=100, lr=0.001, batchSize=64, epoch=10):
 			for k in range(1):
 				Z = np.random.normal(loc=0.0, scale=1.0, size=(sn,nz)).astype(floatX) #Normal prior, P(Z)
 				#Go through one batch
-				cost_D=train_fns['dis'](trainData[b*batchSize:(b+1)*batchSize],Z[b*batchSize:(b+1)*batchSize])
+				cost_D=train_fns['dis'](xTrain[b*batchSize:(b+1)*batchSize],Z[b*batchSize:(b+1)*batchSize])
 			#Train G (inerloop)
 			#Go through one batch
 			Z = np.random.normal(loc=0.0, scale=1.0, size=(sn,nz)).astype(floatX) 
