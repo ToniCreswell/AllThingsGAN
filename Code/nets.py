@@ -22,5 +22,5 @@ def get_dis(nz=100):
 	dis = batch_norm(Conv2DLayer(incoming=dis, num_filters=512, filter_size=5,stride=2, nonlinearity=lrelu(0.2),pad=2)) 
 	dis = batch_norm(Conv2DLayer(incoming=dis, num_filters=1024, filter_size=5,stride=2, nonlinearity=lrelu(0.2),pad=2)) 
 	dis = reshape(incoming=dis, shape=(-1,1024*4*4))
-	dis = DenseLayer(incoming=dis, num_units=1, nonlinearity=None)
+	dis = DenseLayer(incoming=dis, num_units=1, nonlinearity=sigmoid)
 	return dis

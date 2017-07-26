@@ -33,6 +33,7 @@ def build_net(nz=100):
 
 
 def prep_train(lr=0.0002, nz=100):
+
 	G,D=build_net(nz=nz)
 
 	x = T.tensor4('x')
@@ -71,8 +72,7 @@ def prep_train(lr=0.0002, nz=100):
 
 	return train_fns, test_fns, G, D
 
-def train(nz=100, lr=0.001, batchSize=64, epoch=10):
-
+def train(nz=100, lr=0.0002, batchSize=64, epoch=10):
 
 	xTrain= load_CelebA()
 	train_fns, test_fns, G, D = prep_train(nz=nz, lr=lr)
