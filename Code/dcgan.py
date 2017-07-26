@@ -1,9 +1,10 @@
 #DCGAN Using Lasagne (for CelebA)
-from lasagne.layers import InputLayer, DenseLayer, Conv2DLayer, Deconv2DLayer, flatten, reshape, batch_norm, Upscale2DLayer
+from lasagne.layers import InputLayer, DenseLayer, Conv2DLayer, Deconv2DLayer, \
+flatten, reshape, batch_norm, Upscale2DLayer
 from lasagne.nonlinearities import rectify as relu
 from lasagne.nonlinearities import LeakyRectify as lrelu
 from lasagne.nonlinearities import sigmoid
-from lasagne.layers import get_output, get_all_params, get_output_shape
+from lasagne.layers import get_output, get_all_params, get_output_shape, get_all_layers
 from lasagne.objectives import binary_crossentropy as bce
 from lasagne.updates import adam
 
@@ -16,6 +17,7 @@ from matplotlib import pyplot as plt
 from skimage.io import imsave
 
 from functions import get_args, load_CelebA
+from nets import get_gen, get_dis
 
 import os
 
@@ -24,28 +26,13 @@ floatX=theano.config.floatX
 
 def build_net(nz=100):
 	# nz = size of latent code
-	#N.B. using batch_norm applies bn before non-linearity!
-	#Generator networks
-	gen = InputLayer(shape=(None,nz))
-	gen = DenseLayer(incoming=gen, num_units=1024*4*4)
-	gen = reshape(incoming=gen, shape=(-1,1024,4,4))
-	gen = batch_norm(Deconv2DLayer(incoming=gen, num_filters=512, filter_size=4, stride=2, nonlinearity=relu, crop=1))
-	gen = batch_norm(Deconv2DLayer(incoming=gen, num_filters=256, filter_size=4, stride=2, nonlinearity=relu, crop=1))
-	gen = batch_norm(Deconv2DLayer(incoming=gen, num_filters=128, filter_size=4, stride=2, nonlinearity=relu, crop=1))
-	gen = Deconv2DLayer(incoming=gen, num_filters=3, filter_size=4, stride=2, nonlinearity=sigmoid, crop=1)
-
-	dis = InputLayer(shape=(None,3,64,64))
-	dis = batch_norm(Conv2DLayer(incoming=dis, num_filters=128, filter_size=5,stride=2, nonlinearity=lrelu(0.2),pad=2))
-	dis = batch_norm(Conv2DLayer(incoming=dis, num_filters=256, filter_size=5,stride=2, nonlinearity=lrelu(0.2),pad=2))
-	dis = batch_norm(Conv2DLayer(incoming=dis, num_filters=512, filter_size=5,stride=2, nonlinearity=lrelu(0.2),pad=2)) 
-	dis = batch_norm(Conv2DLayer(incoming=dis, num_filters=1024, filter_size=5,stride=2, nonlinearity=lrelu(0.2),pad=2)) 
-	dis = reshape(incoming=dis, shape=(-1,1024*4*4))
-	dis = DenseLayer(incoming=dis, num_units=1, nonlinearity=sigmoid)
+	gen = get_gen(nz=nz)
+	dis = get_dis(nz=nz)
 
 	return gen, dis
 
 
-def prep_train(alpha=0.0002, nz=100):
+def prep_train(lr=0.0002, nz=100):
 	G,D=build_net(nz=nz)
 
 	x = T.tensor4('x')
@@ -56,6 +43,7 @@ def prep_train(alpha=0.0002, nz=100):
 	D_G_z=get_output(D,G_z)
 	D_x=get_output(D,x)
 
+	# test samples
 	samples=get_output(G,z,deterministic=True)
 
 	#Get parameters of G and D
@@ -69,35 +57,37 @@ def prep_train(alpha=0.0002, nz=100):
 	grad_d=T.grad(J_D,params_d)
 	grad_g=T.grad(J_G,params_g)
 
-	update_D = adam(grad_d,params_d, learning_rate=alpha)
-	update_G = adam(grad_g,params_g, learning_rate=alpha)
+	update_D = adam(grad_d,params_d, learning_rate=lr)
+	update_G = adam(grad_g,params_g, learning_rate=lr)
 
 	#theano train functions
-	train_G=theano.function(inputs=[z], outputs=J_G, updates=update_G)
-	train_D=theano.function(inputs=[x,z], outputs=J_D, updates=update_D)
+	train_fns={}
+	train_fns['gen']=theano.function(inputs=[z], outputs=J_G, updates=update_G)
+	train_fns['dis']=theano.function(inputs=[x,z], outputs=J_D, updates=update_D)
 
 	#theano test functions
-	test_G=theano.function(inputs=[z],outputs=samples)
+	test_fns={}
+	test_fns['sample']=theano.function(inputs=[z],outputs=samples)
 
-	return train_G, train_D, test_G, G, D
+	return train_fns, test_fns, G, D
 
-def train(trainData, nz=100, alpha=0.001, batchSize=64, epoch=10):
-	train_G, train_D, test_G, G, D = prep_train(nz=nz, alpha=alpha)
-	sn,sc,sx,sy=np.shape(trainData)
-	print sn,sc,sx,sy
+def train(nz=100, lr=0.001, batchSize=64, epoch=10):
+
+
+	xTrain= load_CelebA()
+	train_fns, test_fns, G, D = prep_train(nz=nz, lr=lr)
+
+	sn,sc,sx,sy=np.shape(xTrain)
 	batches=int(np.floor(float(sn)/batchSize))
 
 	#keep training info
 	g_cost=[]
 	d_cost=[]
 
-	print 'batches=',batches
-
 	timer=time.time()
 	#Train D (outerloop)
 	print 'epoch \t batch \t cost G \t\t cost D \t\t time (s)'
 	for e in range(epoch):
-		#random re-order of data (no doing for now cause slow)
 		#Do for all batches
 		for b in range(batches):
 			for k in range(1):
@@ -129,11 +119,13 @@ def test(G):
 	return G_Z
 
 
-opts = get_args()
-print opts
 
-x_train=load_CelebA()
-# G,D=train(x_train)
+if __name__ == '__main__':
+	opts = get_args()
+	G,D=train(nz=opts.nz, lr=opts.lr, batchSize=opts.batchSize, epoch=opts.maxEpochs)
+
+
+
 # G_Z=test(G).eval()
 
 # #see if the output images look good:
