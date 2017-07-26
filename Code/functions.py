@@ -19,13 +19,14 @@ def get_args():
 
 	#function to MNIST load data
 def load_MNIST(opts):
+	print('Loading MNIST data...')
 	f = gzip.open('../InData/mnist.pkl.gz', 'rb')
 	train_set, valid_set, test_set = cPickle.load(f)
 	f.close()
 
 	return train[0].reshape(-1,1,28,28).astype(floatX), train[1], \
 	test[0].reshape(-1,1,28,28).astype(floatX), test[1], \
-	val[0].astype(-1,1,28,28).astype(floatX), val[1]
+	val[0].reshape(-1,1,28,28).astype(floatX), val[1]
 
 
 def load_CelebA():
@@ -40,5 +41,3 @@ def load_CelebA():
 
 	print 'CelebA: shape:', np.shape(data), 'min:', data.min() ,'max:', data.max()
 	return data
-
-
