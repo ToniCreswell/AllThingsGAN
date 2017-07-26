@@ -17,8 +17,9 @@ import numpy as np
 import theano
 from theano import tensor as T
 import time
-from matplotlib import pyplot as plt 
+import matplotlib
 matplotlib.use('Agg')
+import matplotlib.pyplot as plt
 
 from skimage.io import imsave
 
