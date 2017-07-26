@@ -15,7 +15,9 @@ from matplotlib import pyplot as plt
 
 from skimage.io import imsave
 
-from functions import get_args, loadData
+from functions import get_args, load_CelebA
+
+import os
 
 floatX=theano.config.floatX
 
@@ -67,23 +69,20 @@ def prep_train(alpha=0.0002, nz=100):
 	grad_d=T.grad(J_D,params_d)
 	grad_g=T.grad(J_G,params_g)
 
-	#for p,g in zip(params_d, grad_d):
-	#	print p,'+',alpha,'+', g, '\n'
-
-	#update_D = [(param, param - alpha * grad) for param, grad in zip(params_d, grad_d)]
-	#update_G = [(param, param - alpha * grad) for param, grad in zip(params_g, grad_g)]
 	update_D = adam(grad_d,params_d, learning_rate=alpha)
 	update_G = adam(grad_g,params_g, learning_rate=alpha)
 
-
+	#theano train functions
 	train_G=theano.function(inputs=[z], outputs=J_G, updates=update_G)
 	train_D=theano.function(inputs=[x,z], outputs=J_D, updates=update_D)
+
+	#theano test functions
 	test_G=theano.function(inputs=[z],outputs=samples)
 
-	return train_G, train_D, G, D
+	return train_G, train_D, test_G, G, D
 
 def train(trainData, nz=100, alpha=0.001, batchSize=64, epoch=10):
-	train_G, train_D, G, D = prep_train(nz=nz, alpha=alpha)
+	train_G, train_D, test_G, G, D = prep_train(nz=nz, alpha=alpha)
 	sn,sc,sx,sy=np.shape(trainData)
 	print sn,sc,sx,sy
 	batches=int(np.floor(float(sn)/batchSize))
@@ -115,12 +114,12 @@ def train(trainData, nz=100, alpha=0.001, batchSize=64, epoch=10):
 			d_cost.append(cost_D)
 
 
-		#save plot of the cost
+	#save plot of the cost
 	plt.plot(range(batches*epoch),g_cost, label="G")
 	plt.plot(range(batches*epoch),d_cost, label="D")
 	plt.legend()
 	plt.xlabel('epoch')
-	plt.savefig('testOutputs/cost_regular.png')
+	plt.savefig(os.path.join(opts.outDir,'/cost_regular.png'))
 
 	return G, D
 
@@ -133,7 +132,7 @@ def test(G):
 opts = get_args()
 print opts
 
-# x_train=loadData()
+x_train=load_CelebA()
 # G,D=train(x_train)
 # G_Z=test(G).eval()
 
