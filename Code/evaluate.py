@@ -70,7 +70,7 @@ def eval_gen(sample_fn, nz, outDir, mean=0.0, std=1.0, rows=5, cols=5):
 	X = sample_fn(Z)
 
 	montage = montage_RGB(X, rows=rows, cols=cols)
-	imsave((os.path,join(outDir,'montage.png'),montage))
+	imsave((os.path.join(outDir,'montage.png'),montage))
 
 	return montage
 
