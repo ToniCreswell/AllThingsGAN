@@ -133,6 +133,7 @@ if __name__ == '__main__':
 	G,D, train_fns, test_fns =train(nz=opts.nz, lr=opts.lr, batchSize=opts.batchSize, epoch=opts.maxEpochs \
 		, outDir=opts.outDir)
 
+	print test_fns['sample']
 	montage = eval_gen(test_fns['sample'], opts.nz, opts.outDir)
 
 
