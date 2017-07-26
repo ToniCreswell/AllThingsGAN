@@ -6,7 +6,7 @@ import theano
 floatX = theano.config.floatX
 
 
-def montage_RGB(samples, rows, cols):
+def montage_RGB(samples, rows=5, cols=5):
 	"""
 
 	Parameters
@@ -67,7 +67,7 @@ def eval_gen(sample_fn, nz, outDir, mean=0.0, std=1.0, rows=5, cols=5):
 	print sample_fn
 	X = sample_fn(Z)
 
-	montage = montage_RGB(X)
+	montage = montage_RGB(X, rows=rows, cols=cols)
 	imsave((os.path,join(outDir,'montage.png'),montage))
 
 	return montage
