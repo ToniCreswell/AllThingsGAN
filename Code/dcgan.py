@@ -18,6 +18,7 @@ from skimage.io import imsave
 
 from functions import get_args, load_CelebA, print_layers
 from nets import get_gen_celebA, get_dis_celebA
+from eval import eval_gen
 
 import os
 
@@ -72,7 +73,7 @@ def prep_train(lr=0.0002, nz=100):
 
 	return train_fns, test_fns, G, D
 
-def train(nz=100, lr=0.0002, batchSize=64, epoch=10):
+def train(nz=100, lr=0.0002, batchSize=64, epoch=10, outDir='../Experiments/dcgan'):
 
 	xTrain= load_CelebA()
 	train_fns, test_fns, G, D = prep_train(nz=nz, lr=lr)
@@ -89,7 +90,7 @@ def train(nz=100, lr=0.0002, batchSize=64, epoch=10):
 	print 'epoch \t batch \t cost G \t\t cost D \t\t time (s)'
 	for e in range(epoch):
 		#Do for all batches
-		for b in range(batches):
+		for b in range(10):#batches):
 			for k in range(1):
 				Z = np.random.normal(loc=0.0, scale=1.0, size=(sn,nz)).astype(floatX) #Normal prior, P(Z)
 				#Go through one batch
@@ -104,14 +105,14 @@ def train(nz=100, lr=0.0002, batchSize=64, epoch=10):
 			d_cost.append(cost_D)
 
 
-	#save plot of the cost
-	plt.plot(range(batches*epoch),g_cost, label="G")
-	plt.plot(range(batches*epoch),d_cost, label="D")
-	plt.legend()
-	plt.xlabel('epoch')
-	plt.savefig(os.path.join(opts.outDir,'/cost_regular.png'))
+	# #save plot of the cost
+	# plt.plot(range(batches*epoch),g_cost, label="G")
+	# plt.plot(range(batches*epoch),d_cost, label="D")
+	# plt.legend()
+	# plt.xlabel('epoch')
+	# plt.savefig(os.path.join(opts.outDir,'/cost_regular.png'))
 
-	return G, D
+	return train_fns, test_fns, G, D
 
 def test(G):
 	Z=np.random.normal(loc=0.0, scale=1.0, size=(100,100)).astype(floatX)
@@ -129,7 +130,13 @@ if __name__ == '__main__':
 		print_layers(G, nn_prefix='generator')
 		print_layers(D, nn_prefix='discriminator')
 
-	G,D=train(nz=opts.nz, lr=opts.lr, batchSize=opts.batchSize, epoch=opts.maxEpochs)
+	G,D, train_fns, test_fns =train(nz=opts.nz, lr=opts.lr, batchSize=opts.batchSize, epoch=opts.maxEpochs \
+		, outDir=opts.outDir)
+
+	montage = eval_gen(test_fns['sample'], opts.nz, opts.outDir)
+
+
+
 
 
 
