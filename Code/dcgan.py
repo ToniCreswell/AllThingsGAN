@@ -68,7 +68,7 @@ def prep_train(lr=0.0002, nz=100):
 	train_fns['dis']=theano.function(inputs=[x,z], outputs=J_D, updates=update_D)
 
 	#theano test functions
-	test_fns={}
+	test_fns={'sample', 'other'}
 	test_fns['sample']=theano.function(inputs=[z],outputs=samples)
 
 	return train_fns, test_fns, G, D
