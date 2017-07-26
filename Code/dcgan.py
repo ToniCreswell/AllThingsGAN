@@ -74,10 +74,10 @@ def prep_train(lr=0.0002, nz=100):
 def train(nz=100, lr=0.001, batchSize=64, epoch=10):
 
 
-	xTrain = load_CelebA()
+	xTrain, _,_,_,_,_ = load_CelebA()
 	train_fns, test_fns, G, D = prep_train(nz=nz, lr=lr)
 
-	sn,sc,sx,sy=np.shape(trainData)
+	sn,sc,sx,sy=np.shape(xTrain)
 	batches=int(np.floor(float(sn)/batchSize))
 
 	#keep training info
