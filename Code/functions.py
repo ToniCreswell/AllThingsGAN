@@ -3,6 +3,7 @@ import numpy as np
 import cPickle
 import gzip, zipfile
 import os
+from lasagne.layers import get_all_layers, get_output_shape
 
 import theano
 floatX = theano.config.floatX
