@@ -21,7 +21,7 @@ def montage_RGB(samples, rows=5, cols=5):
 	cols: int
 		no of cols of samples
 	"""
-	assert samples.shape[0] > rows*cols, "less samples than row * cols"
+	assert samples.shape[0] >= rows*cols, "less samples than row * cols"
 
 	montage=[]
 	for i in range(rows):
