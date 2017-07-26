@@ -1,6 +1,9 @@
 # functions in here are used for evluatin the models
 import numpy as np
 from skimage.io import imsave
+import theano
+
+floatX = theano.config.floatX
 
 
 def montage_RGB(samples, rows, cols):
