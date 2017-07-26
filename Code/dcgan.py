@@ -17,7 +17,7 @@ from matplotlib import pyplot as plt
 from skimage.io import imsave
 
 from functions import get_args, load_CelebA, print_layers
-from nets import get_gen_celebA, get_dis_celeA
+from nets import get_gen_celebA, get_dis_celebA
 
 import os
 
@@ -27,7 +27,7 @@ floatX=theano.config.floatX
 def build_net(nz=100):
 	# nz = size of latent code
 	gen = get_gen_celebA(nz=nz)
-	dis = get_dis_celeA(nz=nz)
+	dis = get_dis_celebA(nz=nz)
 
 	return gen, dis
 
