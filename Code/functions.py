@@ -13,11 +13,8 @@ def get_args():
 	parser.add_argument('--maxEpochs', default=10, type=int) 
 	parser.add_argument('--lr', default=1e-3, type=float)  #learning rate
 	parser.add_argument('--batchSize', default=64, type=int)
-<<<<<<< HEAD
 	parser.add_argument('--printLayers', action= 'store_true')
-=======
 	parser.add_argument('--nz', default=100, type=int)
->>>>>>> 043c54a3ea1261e6af1eea112ad20928c5101a79
 	args = parser.parse_args()
 	return args
 
