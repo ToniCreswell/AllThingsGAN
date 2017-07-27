@@ -1,5 +1,5 @@
 """
-Evaluation of the model
+Evaluation of the network
 """
 
 import numpy as np
