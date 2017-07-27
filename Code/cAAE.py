@@ -30,7 +30,8 @@ import os, sys
 floatX=theano.config.floatX
 
 from functions import get_args, load_MNIST
-from nets import get_enc_MNIST, get_Zenc_MNIST, get_Yenc_MNIST, get_dec_MNIST, get_disZ_MNIST
+from nets import get_enc_MNIST, get_Zenc_MNIST, get_Yenc_MNIST, get_dec_MNIST, \
+get_disZ_MNIST, get_disY_MNIST
 
 import argparse
 
