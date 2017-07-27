@@ -235,7 +235,7 @@ if __name__ == '__main__':
 	train_fns, test_fns, train_costs = train(nz=opts.nz, lr=opts.lr, batchSize=opts.batchSize, epoch=opts.maxEpochs \
 		, outDir=opts.outDir)
 
-	save(train_costs=train_costs, batchsize=opts.batchsize)
+	save(train_costs=train_costs, batchsize=opts.batchSize)
 
 
 
