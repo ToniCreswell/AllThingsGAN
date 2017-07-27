@@ -162,5 +162,12 @@ def print_layers(nn, nn_prefix='nn'):
 		label = '{0}'.format(layer.__class__.__name__)
 		print('{:11s} {} : {:25s} - shape : {} '.format(nn_prefix[:10], i,label[:25], get_output_shape(nn_layers[i])))
 
+#Function to apply learned models to data in batches
+def apply(model, data, batchSize=64):
+	output=[]
+	for b in range(np.shape(data)[0]//batchSize):
+		out=model(data[b*batchSize:(b+1)*batchSize])
+		output.append(out)
+	return np.concatenate(output)
 
 

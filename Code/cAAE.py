@@ -29,7 +29,7 @@ import os, sys
 
 floatX=theano.config.floatX
 
-from functions import get_args, load_MNIST
+from functions import get_args, load_MNIST, apply
 from nets import get_enc_MNIST, get_Zenc_MNIST, get_Yenc_MNIST, get_dec_MNIST, \
 get_disZ_MNIST, get_disY_MNIST
 
@@ -230,14 +230,6 @@ def train(opts):
 
 	return train_costs, test_costs, train_fns, test_fns
 
-#Function to apply learned models to data in batches
-def apply(model, data, batchSize=64):
-	output=[]
-	for b in range(np.shape(data)[0]//batchSize):
-		out=model(data[b*batchSize:(b+1)*batchSize])
-		output.append(out)
-	return np.concatenate(output)
-
 
 def save(opts, train_costs, test_costs, train_fns, test_fns):
 	newDir = opts.outDir
@@ -286,11 +278,8 @@ def save(opts, train_costs, test_costs, train_fns, test_fns):
 	#Save example reconstructions
 	rec = apply(test_fns['rec'], x_test)
 	print np.shape(rec), np.shape(x_test)
-	try:
-		test_rec = np.mean((rec - x_test[:rec.shape[0]])**2)
-		print 'Mean Test Reconstruction Error:', test_rec  #may no rec all
-	except:
-		print 'error calc mse'
+	test_rec = np.mean((rec - x_test[:rec.shape[0]])**2)
+	print 'Mean Test Reconstruction Error:', test_rec  #may no rec all
 
 	#Save generated samples (by category)
 	fig4=plt.figure()
