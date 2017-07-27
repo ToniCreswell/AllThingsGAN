@@ -99,9 +99,9 @@ def load_MNIST(opts):
 	f.close()
 
 	train_im, train_label, test_im, test_label, valid_im, valid_label \
-	= train[0].reshape(-1,1,28,28).astype(floatX), train[1], \
-	test[0].reshape(-1,1,28,28).astype(floatX), test[1], \
-	valid[0].reshape(-1,1,28,28).astype(floatX), valid[1]
+	= train[0].astype(floatX), train[1], \
+	test[0].astype(floatX), test[1], \
+	valid[0].astype(floatX), valid[1]
 
 	return train_im, train_label, test_im, test_label, valid_im, valid_label
 
