@@ -208,7 +208,7 @@ def train(nz=100, lr=0.0002, batchSize=64, epoch=10, outDir='../Experiment/dcgan
 	return train_fns, test_fns, train_costs
 
 
-def save(train_costs, test_fns, nz, batchsize, outDir='../Experiment/dcgan'):
+def save(train_costs, test_fns, nz, batchSize, outDir='../Experiment/dcgan'):
 
 	#save plot of the cost
 	plt.plot(train_costs['gen'], label="G")
@@ -235,7 +235,7 @@ if __name__ == '__main__':
 	train_fns, test_fns, train_costs = train(nz=opts.nz, lr=opts.lr, batchSize=opts.batchSize, \
 		epoch=opts.maxEpochs , outDir=opts.outDir)
 
-	save(train_costs=train_costs, test_fns=test_fns, nz=opts.nz, batchsize=opts.batchSize, \
+	save(train_costs=train_costs, test_fns=test_fns, nz=opts.nz, batchSize=opts.batchSize, \
 		outDir=opts.outDir)
 
 
