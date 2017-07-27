@@ -7,7 +7,7 @@ All current networks to be used for the Adversarial Models
 from lasagne.layers import InputLayer, DenseLayer, Conv2DLayer, Deconv2DLayer, flatten, reshape, batch_norm, Upscale2DLayer
 from lasagne.nonlinearities import rectify as relu
 from lasagne.nonlinearities import LeakyRectify as lrelu
-from lasagne.nonlinearities import sigmoid
+from lasagne.nonlinearities import sigmoid, softmax
 
 
 def get_gen_celebA(nz=100):
