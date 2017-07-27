@@ -208,7 +208,7 @@ def train(nz=100, lr=0.0002, batchSize=64, epoch=10, outDir='../Experiment/dcgan
 	return train_fns, test_fns, train_costs
 
 
-def save(train_costs, test_fns, batchsize):
+def save(train_costs, test_fns, nz, batchsize, outDir='../Experiment/dcgan'):
 
 	#save plot of the cost
 	plt.plot(train_costs['gen'], label="G")
@@ -218,7 +218,7 @@ def save(train_costs, test_fns, batchsize):
 	plt.savefig(os.path.join(outDir,'cost_regular.png'))
 
 	#save a montage of image samples
-	eval_gen(test_fns['sample'], opts.nz, opts.outDir)
+	eval_gen(test_fns['sample'], nz, outDir)
 
 
 
@@ -232,10 +232,11 @@ if __name__ == '__main__':
 		print_layers(G, nn_prefix='generator')
 		print_layers(D, nn_prefix='discriminator')
 
-	train_fns, test_fns, train_costs = train(nz=opts.nz, lr=opts.lr, batchSize=opts.batchSize, epoch=opts.maxEpochs \
-		, outDir=opts.outDir)
+	train_fns, test_fns, train_costs = train(nz=opts.nz, lr=opts.lr, batchSize=opts.batchSize, \
+		epoch=opts.maxEpochs , outDir=opts.outDir)
 
-	save(train_costs=train_costs, batchsize=opts.batchSize)
+	save(train_costs=train_costs, test_fns=test_fns, nz=opts.nz, batchsize=opts.batchSize, \
+		outDir=opts.outDir)
 
 
 
