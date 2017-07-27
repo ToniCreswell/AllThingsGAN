@@ -29,7 +29,7 @@ import os, sys
 
 floatX=theano.config.floatX
 
-from functions import get_args, load_MNIST
+from functions import get_args, load_MNIST, apply
 from nets import get_enc_MNIST, get_Zenc_MNIST, get_Yenc_MNIST, get_dec_MNIST, \
 get_disZ_MNIST, get_disY_MNIST
 
@@ -101,8 +101,6 @@ def prep_train(opts):
 	pYreal = get_output(disY, y)
 	pYfake = get_output(disY, yFake)
 
-	
-	#get output for testing   *leave out sampling for now just reconstruction and clasification
 
 	#loss functions
 	#reconstruction loss
@@ -122,7 +120,7 @@ def prep_train(opts):
 	#supervised loss
 	MIN = 1e-6
 	MAX = 1-MIN
-	J_class = T.mean(cce(T.clip(yFake,MIN, MAX), y))
+	J_class = T.mean(cce(T.clip(yFake, MIN, MAX), y))
 
 	#get params
 	params_enc = get_all_params(enc, trainable=True) \
@@ -133,13 +131,13 @@ def prep_train(opts):
 		+ get_all_params(disY, trainable=True)
 
 	#get grads
-	grad_enc = total_norm_constraint(T.grad(J_enc, params_enc),opts.gradClipping)
-	grad_rec = total_norm_constraint(T.grad(J_rec, params_dec+params_enc),opts.gradClipping)
-	grad_dis = total_norm_constraint(T.grad(J_dis, params_dis),opts.gradClipping)
+	grad_enc = total_norm_constraint(T.grad(J_enc, params_enc), opts.gradClipping)
+	grad_rec = total_norm_constraint(T.grad(J_rec, params_dec + params_enc), opts.gradClipping)
+	grad_dis = total_norm_constraint(T.grad(J_dis, params_dis), opts.gradClipping)
 
 	#get updates
 	update_enc = momentum(grad_enc, params_enc, learning_rate=lrADV, momentum=0.1)
-	update_rec = momentum(grad_rec, params_dec+params_enc, learning_rate=lrREC, momentum=0.9)
+	update_rec = momentum(grad_rec, params_dec + params_enc, learning_rate=lrREC, momentum=0.9)
 	update_dis = momentum(grad_dis, params_dis, learning_rate=lrADV, momentum=0.1)
 	update_class = momentum(J_class, get_all_params(enc, trainable=True) \
 		+ get_all_params(Yenc, trainable=True), learning_rate=lrSUP, momentum=0.9)
@@ -149,8 +147,8 @@ def prep_train(opts):
 	train_fns={}
 	train_fns['enc'] = theano.function(inputs=[x, lrADV], outputs=[J_enc, J_adv_encY, J_adv_encZ], updates=update_enc)
 	train_fns['rec'] = theano.function(inputs=[x, lrREC], outputs=J_rec, updates=update_rec)
-	train_fns['dis'] = theano.function(inputs=[x,y,z, lrADV], outputs=[J_dis, J_adv_disZ,J_adv_disY], updates=update_dis)
-	train_fns['class'] = theano.function(inputs=[x,y, lrSUP], outputs=J_class, updates=update_class)
+	train_fns['dis'] = theano.function(inputs=[x, y, z, lrADV], outputs=[J_dis, J_adv_disZ, J_adv_disY], updates=update_dis)
+	train_fns['class'] = theano.function(inputs=[x, y, lrSUP], outputs=J_class, updates=update_class)
 
 	#theano test functions
 	test_fns={}
@@ -158,7 +156,7 @@ def prep_train(opts):
 	test_fns['encZ'] = theano.function(inputs=[x], outputs=zFake)
 	samples = get_output(dec, T.concatenate([z,y], axis=1))
 	test_fns['gen'] = theano.function(inputs=[y,z], outputs=samples)
-	test_fns['rec_error'] = theano.function(inputs=[x], outputs=squared_error(x,rec))
+	test_fns['rec_error'] = theano.function(inputs=[x], outputs=squared_error(x, rec))
 	test_fns['predictY'] = theano.function(inputs=[x], outputs=yFake)
 	test_fns['accY'] = theano.function(inputs=[x,y], outputs=acc(yFake, y))
 
@@ -175,7 +173,7 @@ def train(opts):
 	train_fns, test_fns = prep_train(opts)
 	x_train, y_train, x_test, y_test, x_val, y_val =load_MNIST(opts)
 
-	print 'Training data loaded: no test healthy images=',np.sum(y_test), '. no unhealthy images=', y_test.shape[0]-np.sum(y_test)
+	print 'Training data loaded: no test healthy images=', np.sum(y_test), '. no unhealthy images=', y_test.shape[0]-np.sum(y_test)
 
 	train_costs={'enc':[], 'rec':[], 'disZ':[], 'disY':[], 'accY':[], 'dis':[]}
 	test_costs={'rec':[], 'accY':[]}
@@ -183,9 +181,9 @@ def train(opts):
 	noBatches=x_train.shape[0]//opts.batchSize
 	for e in range(opts.maxEpochs):
 
-		if e%50:
+		if e % 50:
 			lrREC, lrADV, lrSUP = 0.001, 0.01, 0.01
-		elif e%1000:
+		elif e % 1000:
 			lrREC, lrADV, lrSUP = 0.0001, 0.001, 0.001
 		else:
 			lrREC, lrADV, lrSUP = 0.00001, 0.0001, 0.0001 
@@ -230,23 +228,9 @@ def train(opts):
 
 	return train_costs, test_costs, train_fns, test_fns
 
-#Function to apply learned models to data in batches
-def apply(model, data, batchSize=64):
-	output=[]
-	for b in range(np.shape(data)[0]//batchSize):
-		out=model(data[b*batchSize:(b+1)*batchSize])
-		output.append(out)
-	return np.concatenate(output)
-
 
 def save(opts, train_costs, test_costs, train_fns, test_fns):
-	outDir = opts.outDir
-
-	i=1
-	while os.path.isdir(os.path.join(outDir,'Ex_'+str(i))):
-		i+=1
-	newDir=os.path.join(outDir,'Ex_'+str(i))
-	os.mkdir(newDir)
+	newDir = opts.outDir
 
 	#train and test axies
 	noTrainIter=len(train_costs['rec'])
@@ -287,16 +271,13 @@ def save(opts, train_costs, test_costs, train_fns, test_fns):
 
 
 	#load data again:
-	x_train, y_train, x_test, y_test, x_val, y_val = load_data(opts)
+	x_train, y_train, x_test, y_test, x_val, y_val = load_MNIST(opts)
 	
 	#Save example reconstructions
 	rec = apply(test_fns['rec'], x_test)
 	print np.shape(rec), np.shape(x_test)
-	try:
-		test_rec = np.mean((rec - x_test[:rec.shape[0]])**2)
-		print 'Mean Test Reconstruction Error:', test_rec  #may no rec all
-	except:
-		print 'error calc mse'
+	test_rec = np.mean((rec - x_test[:rec.shape[0]])**2)
+	print 'Mean Test Reconstruction Error:', test_rec  #may no rec all
 
 	#Save generated samples (by category)
 	fig4=plt.figure()
