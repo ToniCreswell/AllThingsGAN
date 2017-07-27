@@ -183,8 +183,7 @@ def train(nz=100, lr=0.0002, batchSize=64, epoch=10, outDir='../Experiment/dcgan
 	batches=int(np.floor(float(sn)/batchSize))
 
 	#keep training info
-	g_cost=[]
-	d_cost=[]
+	train_costs={'gen':[], 'dis':[]}
 
 	timer=time.time()
 	#Train D (outerloop)
@@ -202,18 +201,26 @@ def train(nz=100, lr=0.0002, batchSize=64, epoch=10, outDir='../Experiment/dcgan
 			cost_G=train_fns['gen'](Z[b*batchSize:(b+1)*batchSize])
 			print e,'\t',b,'\t',cost_G,'\t', cost_D,'\t', time.time()-timer
 			timer=time.time()
-			g_cost.append(cost_G)
-			d_cost.append(cost_D)
+			train_costs['gen'].append(cost_G)
+			train_costs['dis'].append(cost_D)
 
+
+	return train_fns, test_fns, train_costs
+
+
+def save(train_costs, test_fns, batchsize):
 
 	#save plot of the cost
-	plt.plot(range(batches*epoch),g_cost, label="G")
-	plt.plot(range(batches*epoch),d_cost, label="D")
+	plt.plot(train_costs['gen'], label="G")
+	plt.plot(train_costs['dis'], label="D")
 	plt.legend()
-	plt.xlabel('epoch')
+	plt.xlabel('iteration w/ batchsize:',+str(batchSize))
 	plt.savefig(os.path.join(outDir,'cost_regular.png'))
 
-	return train_fns, test_fns, G, D
+	#save a montage of image samples
+	eval_gen(test_fns['sample'], opts.nz, opts.outDir)
+
+
 
 
 if __name__ == '__main__':
@@ -225,10 +232,10 @@ if __name__ == '__main__':
 		print_layers(G, nn_prefix='generator')
 		print_layers(D, nn_prefix='discriminator')
 
-	train_fns, test_fns, G, D = train(nz=opts.nz, lr=opts.lr, batchSize=opts.batchSize, epoch=opts.maxEpochs \
+	train_fns, test_fns, train_costs = train(nz=opts.nz, lr=opts.lr, batchSize=opts.batchSize, epoch=opts.maxEpochs \
 		, outDir=opts.outDir)
 
-	montage = eval_gen(test_fns['sample'], opts.nz, opts.outDir)
+	save(train_costs=train_costs, batchsize=opts.batchsize)
 
 
 

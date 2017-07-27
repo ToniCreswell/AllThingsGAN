@@ -240,13 +240,7 @@ def apply(model, data, batchSize=64):
 
 
 def save(opts, train_costs, test_costs, train_fns, test_fns):
-	outDir = opts.outDir
-
-	i=1
-	while os.path.isdir(os.path.join(outDir,'Ex_'+str(i))):
-		i+=1
-	newDir=os.path.join(outDir,'Ex_'+str(i))
-	os.mkdir(newDir)
+	newDir = opts.outDir
 
 	#train and test axies
 	noTrainIter=len(train_costs['rec'])
@@ -287,7 +281,7 @@ def save(opts, train_costs, test_costs, train_fns, test_fns):
 
 
 	#load data again:
-	x_train, y_train, x_test, y_test, x_val, y_val = load_data(opts)
+	x_train, y_train, x_test, y_test, x_val, y_val = load_MNIST(opts)
 	
 	#Save example reconstructions
 	rec = apply(test_fns['rec'], x_test)
