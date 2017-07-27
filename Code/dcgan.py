@@ -214,7 +214,7 @@ def save(train_costs, test_fns, nz, batchSize, outDir='../Experiment/dcgan'):
 	plt.plot(train_costs['gen'], label="G")
 	plt.plot(train_costs['dis'], label="D")
 	plt.legend()
-	plt.xlabel('iteration w/ batchsize:',+str(batchSize))
+	plt.xlabel('iteration w/ batchsize:'+str(batchSize))
 	plt.savefig(os.path.join(outDir,'cost_regular.png'))
 
 	#save a montage of image samples
