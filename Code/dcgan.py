@@ -1,4 +1,5 @@
 """
+Blabla test
 Deep Convolutional Generative Adversarial Networks adapted for the CelebA database.
 Trains two adversarial networks (generator & discriminator) to produce fake but real-looking images.
 
@@ -11,7 +12,7 @@ from lasagne.nonlinearities import LeakyRectify as lrelu
 from lasagne.nonlinearities import sigmoid
 from lasagne.layers import get_output, get_all_params, get_output_shape, get_all_layers
 from lasagne.objectives import binary_crossentropy as bce
-from lasagne.updates import adam
+from lasagne.updates import adam, sgd
 
 import numpy as np
 import theano
@@ -113,7 +114,7 @@ def prep_train(lr=0.0002, nz=100):
 	grad_d=T.grad(J_D,params_d)
 	grad_g=T.grad(J_G,params_g)
 
-	update_D = adam(grad_d,params_d, learning_rate=lr)
+	update_D = sgd(grad_d,params_d, learning_rate=lr)
 	update_G = adam(grad_g,params_g, learning_rate=lr)
 
 	#theano train functions
@@ -183,7 +184,8 @@ def train(nz=100, lr=0.0002, batchSize=64, epoch=10, outDir='../Experiment/dcgan
 	batches=int(np.floor(float(sn)/batchSize))
 
 	#keep training info
-	train_costs={'gen':[], 'dis':[]}
+	g_cost=[]
+	d_cost=[]
 
 	timer=time.time()
 	#Train D (outerloop)
@@ -191,36 +193,23 @@ def train(nz=100, lr=0.0002, batchSize=64, epoch=10, outDir='../Experiment/dcgan
 	for e in range(epoch):
 		#Do for all batches
 		for b in range(batches):
-			for k in range(1):
-				Z = np.random.normal(loc=0.0, scale=1.0, size=(sn,nz)).astype(floatX) #Normal prior, P(Z)
-				#Go through one batch
-				cost_D=train_fns['dis'](xTrain[b*batchSize:(b+1)*batchSize],Z[b*batchSize:(b+1)*batchSize])
-			#Train G (inerloop)
-			#Go through one batch
 			Z = np.random.normal(loc=0.0, scale=1.0, size=(sn,nz)).astype(floatX) 
+			cost_D=train_fns['dis'](xTrain[b*batchSize:(b+1)*batchSize],Z[b*batchSize:(b+1)*batchSize])
 			cost_G=train_fns['gen'](Z[b*batchSize:(b+1)*batchSize])
 			print e,'\t',b,'\t',cost_G,'\t', cost_D,'\t', time.time()-timer
 			timer=time.time()
-			train_costs['gen'].append(cost_G)
-			train_costs['dis'].append(cost_D)
+			g_cost.append(cost_G)
+			d_cost.append(cost_D)
 
-
-	return train_fns, test_fns, train_costs
-
-
-def save(train_costs, test_fns, nz, batchSize, outDir='../Experiment/dcgan'):
 
 	#save plot of the cost
-	plt.plot(train_costs['gen'], label="G")
-	plt.plot(train_costs['dis'], label="D")
+	plt.plot(range(batches*epoch),g_cost, label="G")
+	plt.plot(range(batches*epoch),d_cost, label="D")
 	plt.legend()
-	plt.xlabel('iteration w/ batchsize:'+str(batchSize))
+	plt.xlabel('epoch')
 	plt.savefig(os.path.join(outDir,'cost_regular.png'))
 
-	#save a montage of image samples
-	eval_gen(test_fns['sample'], nz, outDir)
-
-
+	return train_fns, test_fns, G, D
 
 
 if __name__ == '__main__':
@@ -232,11 +221,10 @@ if __name__ == '__main__':
 		print_layers(G, nn_prefix='generator')
 		print_layers(D, nn_prefix='discriminator')
 
-	train_fns, test_fns, train_costs = train(nz=opts.nz, lr=opts.lr, batchSize=opts.batchSize, \
-		epoch=opts.maxEpochs , outDir=opts.outDir)
+	train_fns, test_fns, G, D = train(nz=opts.nz, lr=opts.lr, batchSize=opts.batchSize, epoch=opts.maxEpochs \
+		, outDir=opts.outDir)
 
-	save(train_costs=train_costs, test_fns=test_fns, nz=opts.nz, batchSize=opts.batchSize, \
-		outDir=opts.outDir)
+	montage = eval_gen(test_fns['sample'], opts.nz, opts.outDir)
 
 
 

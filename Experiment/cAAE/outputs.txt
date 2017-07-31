@@ -1,0 +1,1 @@
+Test reconstruction error:0.06075Test classification accuray:0.9829
