@@ -187,6 +187,7 @@ def train(nz=100, lr=0.0002, batchSize=64, epoch=10, outDir='../Experiment/dcgan
 		xTrain = load_CelebA()
 	if opts.mnist : 
 		xTrain,_,_,_,_,_ = load_MNIST()
+	xTrain = xTrain[1000:,:,:,:]
 	print 'Images for training -- shape:{}, min:{}, max:{} '.format(np.shape(xTrain), np.min(xTrain), np.max(xTrain))
 
 	train_fns, test_fns, G, D = prep_train(nz=nz, lr=lr)
