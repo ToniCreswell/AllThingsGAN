@@ -17,8 +17,6 @@ if opts.celeba:
 if opts.mnist:
 	_,_,samples,_,_,_ = load_MNIST()
 
-print 'samples shape: ', np.shape(samples)
-
 def create_montage(samples, rows=5, cols=5):
 	"""
 	Returns a montage of (rows * cols) RGB-images 
@@ -92,6 +90,8 @@ def eval_gen(sample_fn, nz, outDir, mean=0.0, std=1.0, rows=5, cols=5):
 		Returns a montage of RGB-images
 
 	"""
+	print 'Images for testing -- {}: ,min: {},max: {}'.format(np.shape(samples), np.min(samples), np.max(samples))
+
 	noSamples=rows*cols
 	Z = np.random.normal(loc=mean, scale=std, size=(noSamples,nz)).astype(floatX) 
 	print sample_fn
