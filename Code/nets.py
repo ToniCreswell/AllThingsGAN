@@ -86,13 +86,13 @@ def get_gen_mnist(nz=100):
 		Return the generative network 
 
 	"""
-    gen = InputLayer(shape=(None,nz))
-    gen = DenseLayer(incoming=gen, num_units=512*2*2)
-    gen = reshape(incoming=gen, shape=(-1,512,2,2))
-    gen = batch_norm(Deconv2DLayer(incoming=gen, num_filters=256, filter_size=4, stride=2, nonlinearity=relu, crop=1))
-    gen = batch_norm(Deconv2DLayer(incoming=gen, num_filters=128, filter_size=3, stride=2, nonlinearity=relu, crop=1))
-    gen = batch_norm(Deconv2DLayer(incoming=gen, num_filters=64, filter_size=4, stride=2, nonlinearity=relu, crop=1))
-    gen = Deconv2DLayer(incoming=gen, num_filters=1, filter_size=4, stride=2, nonlinearity=sigmoid, crop=1)
+	gen = InputLayer(shape=(None,nz))
+	gen = DenseLayer(incoming=gen, num_units=512*2*2)
+	gen = reshape(incoming=gen, shape=(-1,512,2,2))
+	gen = batch_norm(Deconv2DLayer(incoming=gen, num_filters=256, filter_size=4, stride=2, nonlinearity=relu, crop=1))
+	gen = batch_norm(Deconv2DLayer(incoming=gen, num_filters=128, filter_size=3, stride=2, nonlinearity=relu, crop=1))
+	gen = batch_norm(Deconv2DLayer(incoming=gen, num_filters=64, filter_size=4, stride=2, nonlinearity=relu, crop=1))
+	gen = Deconv2DLayer(incoming=gen, num_filters=1, filter_size=4, stride=2, nonlinearity=sigmoid, crop=1)
 
 	return gen
 
@@ -115,13 +115,13 @@ def get_dis_mnist(nz=100):
 		Return the discriminative network 
 
 	"""
-    dis = InputLayer(shape=(None,1,28,28))
-    dis = batch_norm(Conv2DLayer(incoming=dis, num_filters=64, filter_size=5,stride=2, nonlinearity=lrelu(0.2),pad=2))
-    dis = batch_norm(Conv2DLayer(incoming=dis, num_filters=128, filter_size=5,stride=2, nonlinearity=lrelu(0.2),pad=2))
-    dis = batch_norm(Conv2DLayer(incoming=dis, num_filters=256, filter_size=3,stride=2, nonlinearity=lrelu(0.2),pad=1))
-    dis = batch_norm(Conv2DLayer(incoming=dis, num_filters=512, filter_size=5,stride=2, nonlinearity=lrelu(0.2),pad=2))
-    dis = reshape(incoming=dis, shape=(-1,512*2*2))
-    dis = DenseLayer(incoming=dis, num_units=1, nonlinearity=sigmoid)
+	dis = InputLayer(shape=(None,1,28,28))
+	dis = batch_norm(Conv2DLayer(incoming=dis, num_filters=64, filter_size=5,stride=2, nonlinearity=lrelu(0.2),pad=2))
+	dis = batch_norm(Conv2DLayer(incoming=dis, num_filters=128, filter_size=5,stride=2, nonlinearity=lrelu(0.2),pad=2))
+	dis = batch_norm(Conv2DLayer(incoming=dis, num_filters=256, filter_size=3,stride=2, nonlinearity=lrelu(0.2),pad=1))
+	dis = batch_norm(Conv2DLayer(incoming=dis, num_filters=512, filter_size=5,stride=2, nonlinearity=lrelu(0.2),pad=2))
+	dis = reshape(incoming=dis, shape=(-1,512*2*2))
+	dis = DenseLayer(incoming=dis, num_units=1, nonlinearity=sigmoid)
 	return dis
 
 

@@ -11,6 +11,7 @@ from functions import load_CelebA, load_MNIST, get_args
 floatX = theano.config.floatX
 
 #Images to be tested
+opts = get_args()
 if opts.celeba:
 	samples = load_CelebA()
 if opts.mnist:
