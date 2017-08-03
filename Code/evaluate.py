@@ -19,7 +19,7 @@ if opts.mnist:
 
 print 'samples shape: ', np.shape(samples)
 
-def montage(samples, rows=5, cols=5):
+def create_montage(samples, rows=5, cols=5):
 	"""
 	Returns a montage of (rows * cols) RGB-images 
 
@@ -97,7 +97,7 @@ def eval_gen(sample_fn, nz, outDir, mean=0.0, std=1.0, rows=5, cols=5):
 	print sample_fn
 	X = sample_fn(Z)
 
-	montage = montage(X, rows=rows, cols=cols)
+	montage = create_montage(X, rows=rows, cols=cols)
 	imsave(os.path.join(outDir,'montage.png'),montage)
 	return montage
 

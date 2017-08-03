@@ -201,7 +201,7 @@ def train(nz=100, lr=0.0002, batchSize=64, epoch=10, outDir='../Experiment/dcgan
 
 	timer=time.time()
 	#Train D (outerloop)
-	print 'epoch \t batch \t cost G \t\t cost D \t\t time (s)'
+	print 'epoch \t batch \t cost G \t cost D \t time (s)'
 	for e in range(epoch):
 		#Do for all batches
 		for b in range(batches):
