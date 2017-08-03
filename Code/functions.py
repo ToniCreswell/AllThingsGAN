@@ -16,6 +16,11 @@ def get_args():
 	"""
 	Get all the arguments defined by the user, e.g. the size of the batch, or the learning rate.
 
+	--mnist: boolean
+		Train dcgan on MNIST
+
+	--celeba: boolean
+		Train dcgan on CelebA
 
 	--outDir: str
 		Define the directory path where the results are saved
@@ -44,6 +49,8 @@ def get_args():
 
 	"""
 	parser = argparse.ArgumentParser()
+	parser.add_argument('--mnist', action= 'store_true')
+	parser.add_argument('--celeba', action = 'store_true')
 	parser.add_argument('--outDir', required=True, type=str)
 	parser.add_argument('--maxEpochs', default=1, type=int) 
 	parser.add_argument('--lr', default=1e-3, type=float)  #learning rate
@@ -54,7 +61,7 @@ def get_args():
 	return args
 
 	#function to MNIST load data
-def load_MNIST(opts):
+def load_MNIST():
 	"""
 	Unzip and load the MNIST dataset [1]
 
@@ -99,16 +106,12 @@ def load_MNIST(opts):
 	f.close()
 
 	train_im, train_label, test_im, test_label, valid_im, valid_label \
-	= train[0].astype(floatX), train[1], \
-	test[0].astype(floatX), test[1], \
-	valid[0].astype(floatX), valid[1]
+	= train[0].astype(floatX).reshape([-1,1,28,28]), train[1], \
+	test[0].astype(floatX).reshape([-1,1,28,28]), test[1], \
+	valid[0].astype(floatX).reshape([-1,1,28,28]), valid[1]
 
 	return train_im, train_label, test_im, test_label, valid_im, valid_label
 
-# args = get_args()
-# train_im, train_label, test_im, test_label, valid_im, valid_label = load_MNIST(args)
-# print train_label.dtype
-# print train_im.dtype
 
 def load_CelebA():
 	"""
@@ -116,10 +119,8 @@ def load_CelebA():
 
 	Returns
 	--------
-
 	data: tensor4D
 		images from the CelebA dataset 
-
 
 	References
 	---------
@@ -134,8 +135,6 @@ def load_CelebA():
 		zip.extractall('../InData/')
 
 	data=np.load(inDir,mmap_mode='r').astype(floatX)
-
-	print 'CelebA: shape:', np.shape(data), 'min:', data.min() ,'max:', data.max()
 	return data
 
 
@@ -144,10 +143,8 @@ def print_layers(nn, nn_prefix='nn'):
 	Print the layers of the network in the following way: 
 	..	name_of_layer, position_of_layer, type_of_layer, shape_of_layer
 
-
 	Parameters
 	----------
-
 	nn: str
 		Name refering to the layer
 

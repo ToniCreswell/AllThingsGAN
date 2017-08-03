@@ -1,5 +1,4 @@
 """
-Blabla test
 Deep Convolutional Generative Adversarial Networks adapted for the CelebA database.
 Trains two adversarial networks (generator & discriminator) to produce fake but real-looking images.
 
@@ -24,8 +23,8 @@ import matplotlib.pyplot as plt
 
 from skimage.io import imsave
 
-from functions import get_args, load_CelebA, print_layers
-from nets import get_gen_celebA, get_dis_celebA
+from functions import get_args, load_CelebA, load_MNIST, print_layers
+from nets import get_gen_celebA, get_dis_celebA, get_gen_mnist, get_dis_mnist
 from evaluate import eval_gen
 
 import os
@@ -35,7 +34,9 @@ floatX=theano.config.floatX
 
 def build_net(nz=100):
 	"""
-	Get the structure of the generator (gen) and the discriminator (dis) adapted for CelebA  
+	Get the structure of the generator (gen) and the discriminator (dis) adapted for CelebA or for MNIST
+	opts.celeba : argument defined by the user to apply the dcgan on CelebA database
+	opts.mnist : argument defined by the user to apply the dcgan on MNIST database
 
 	Parameters
 	----------
@@ -50,8 +51,13 @@ def build_net(nz=100):
 	dis: class 'layers' or turple
 		Structure of the discriminator. Takes in input an image and returns a probability.
 	"""
-	gen = get_gen_celebA(nz=nz)
-	dis = get_dis_celebA(nz=nz)
+	if opts.celeba:
+		gen = get_gen_celebA(nz=nz)
+		dis = get_dis_celebA(nz=nz)
+
+	if opts.mnist:
+		gen = get_gen_mnist(nz=nz)
+		dis = get_dis_mnist(nz=nz)
 
 	return gen, dis
 
@@ -80,7 +86,7 @@ def prep_train(lr=0.0002, nz=100):
 
 	test_fns: theano function
 		Function returning images generated for testing
-		train_fns['samples'] takes un input z (theano.tensor.matrix)
+		test_fns['samples'] takes un input z (theano.tensor.matrix)
 
 
 	G: class 'layer' or turple
@@ -176,8 +182,13 @@ def train(nz=100, lr=0.0002, batchSize=64, epoch=10, outDir='../Experiment/dcgan
 	---------
 	..  [1] "Generative Adversarial Networks." Goodfellow et al. ArXiv 2014
 	"""
+	# load the images for training
+	if opts.celeba : 
+		xTrain = load_CelebA()
+	if opts.mnist : 
+		xTrain,_,_,_,_,_ = load_MNIST()
+	print 'Images for training -- shape:{}, min:{}, max:{} '.format(np.shape(xTrain), np.min(xTrain), np.max(xTrain))
 
-	xTrain= load_CelebA()
 	train_fns, test_fns, G, D = prep_train(nz=nz, lr=lr)
 
 	sn,sc,sx,sy=np.shape(xTrain)
@@ -215,40 +226,20 @@ def train(nz=100, lr=0.0002, batchSize=64, epoch=10, outDir='../Experiment/dcgan
 if __name__ == '__main__':
 	opts = get_args()
 
-	#print the layers out with sizes
+	#print the layers and their shape of the generator and discriminator
 	if opts.printLayers:
 		G,D=build_net(nz=opts.nz)
 		print_layers(G, nn_prefix='generator')
 		print_layers(D, nn_prefix='discriminator')
 
+	#train the adversarial network 
 	train_fns, test_fns, G, D = train(nz=opts.nz, lr=opts.lr, batchSize=opts.batchSize, epoch=opts.maxEpochs \
 		, outDir=opts.outDir)
 
+	# test the model by printing generated images
 	montage = eval_gen(test_fns['sample'], opts.nz, opts.outDir)
 
 
-
-
-# G_Z=test(G).eval()
-
-# #see if the output images look good:
-# imsave('testOutputs/text.png',G_Z[0].transpose(1,2,0))
-# sn,sc,sx,sy=np.shape(x_train)
-# montage=np.ones(shape=(10*sx,10*sy,3))
-
-# n=0
-# x=0
-# y=0
-# for i in range(10):
-#     for j in range(10):
-#         im=G_Z[n,:,:,:].swapaxes(0, 2)
-#         n+=1
-#         montage[x:x+sx,y:y+sy,:]=im
-#         x+=sx
-#     x=0
-#     y+=sy
-# print 'montage:',np.shape(montage)
-# imsave('testOutputs/montage.png',montage)
 
 
 

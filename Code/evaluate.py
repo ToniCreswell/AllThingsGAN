@@ -6,12 +6,19 @@ import numpy as np
 from skimage.io import imsave
 import theano
 import os
-from functions import load_CelebA
+from functions import load_CelebA, load_MNIST, get_args
 
 floatX = theano.config.floatX
 
+#Images to be tested
+if opts.celeba:
+	samples = load_CelebA()
+if opts.mnist:
+	_,_,samples,_,_,_ = load_MNIST()
 
-def montage_RGB(samples, rows=5, cols=5):
+print 'samples shape: ', np.shape(samples)
+
+def montage(samples, rows=5, cols=5):
 	"""
 	Returns a montage of (rows * cols) RGB-images 
 
@@ -35,14 +42,21 @@ def montage_RGB(samples, rows=5, cols=5):
 	"""
 	assert samples.shape[0] >= rows*cols, "less samples than row * cols"
 	montage=[]
+	# Images in input are one-channel (mnist)
+	if samples.shape[1] == 1:
+		samples = samples.transpose(0,2,3,1).squeeze()
+		print np.shape(samples)
+	# Images in input are rgb-channel (celebA)
+	if samples.shape[1] == 3:
+		samples = samples.transpose(0,2,3,1)
+		print np.shape(samples)
+
 	for i in range(rows):
-		col = samples[i*cols:(i+1)*cols].transpose(0,2,3,1)
+		col = samples[i*cols:(i+1)*cols]
 		col = np.hstack(col)
 		montage.append(col)
 	montage = np.vstack(montage)
 	return montage
-
-samples = load_CelebA()
 
 
 def eval_gen(sample_fn, nz, outDir, mean=0.0, std=1.0, rows=5, cols=5):
@@ -82,6 +96,6 @@ def eval_gen(sample_fn, nz, outDir, mean=0.0, std=1.0, rows=5, cols=5):
 	print sample_fn
 	X = sample_fn(Z)
 
-	montage = montage_RGB(X, rows=rows, cols=cols)
+	montage = montage(X, rows=rows, cols=cols)
 	imsave(os.path.join(outDir,'montage.png'),montage)
 
