@@ -24,7 +24,7 @@ import matplotlib.pyplot as plt
 from skimage.io import imsave
 
 from functions import get_args, load_CelebA, load_MNIST, print_layers
-from nets import get_gen_celebA, get_dis_celebA, get_gen_mnist, get_dis_mnist
+from nets import get_wgen_celebA, get_wdis_celebA, get_wgen_mnist, get_wdis_mnist
 from evaluate import eval_gen
 
 import os
@@ -149,9 +149,6 @@ def train(nz=100, lr=0.0002, batchSize=64, epoch=10, outDir='../Experiment/dcgan
 	It prints the costs of the generator and the discriminator for every batch. 
 	It saves the costs obtained w.r.t the number of batches in a .png image.
 
-	The lower is the cost, the better is the network. 
-	Best results are obtained for cost_gen = ln(4) and cost_dis = ln(0.5) [1]
-
 
 	Parameters
 	----------
@@ -184,11 +181,6 @@ def train(nz=100, lr=0.0002, batchSize=64, epoch=10, outDir='../Experiment/dcgan
 
 	D: class 'layer' or turple
 		Structure of the discriminator
-
-
-	Reference
-	---------
-	..  [1] "Generative Adversarial Networks." Goodfellow et al. ArXiv 2014
 	"""
 	# load the images for training
 	if opts.celeba : 
