@@ -4,15 +4,8 @@ All current networks to be used for the Adversarial Models
 
 ################################## dcgan Nets ##################################
 
-from lasagne.layers import InputLayer, DenseLayer, Conv2DLayer, Deconv2DLayer, flatten, reshape, batch_norm, Upscale2DLayer
-from lasagne.nonlinearities import rectify as relu
-from lasagne.nonlinearities import LeakyRectify as lrelu
-from lasagne.nonlinearities import sigmoid, softmax
-
-
-def get_gen_celebA(nz=100):
 	"""
-	Generative network adapted for the CelebA database
+	Generative network adapted for the CelebA/MNIST database
 
 	The generative network is composed of deconvolution layers. 
 	It takes in input a variable from the latent space (matrix).
@@ -28,7 +21,36 @@ def get_gen_celebA(nz=100):
 	gen: class 'Layer' instance or a tuple
 		Return the generative network 
 
+	
+	*							*							*
+
+
+	Discriminative network adapted for the CelebA/MNIST database
+
+	The discriminative network is composed of deconvolution layers. 
+	It takes in input an image (4D tensor).
+	It returns a probability (float from 0 to 1). 
+
+	Parameters
+	----------
+	nz: int 
+		Number of variables in the latent space
+
+	Returns
+	--------
+	dis: class 'layer' instance or tuple
+		Return the discriminative network 
+
 	"""
+
+from lasagne.layers import InputLayer, DenseLayer, Conv2DLayer, Deconv2DLayer, flatten, reshape, batch_norm, Upscale2DLayer
+from lasagne.nonlinearities import rectify as relu
+from lasagne.nonlinearities import LeakyRectify as lrelu
+from lasagne.nonlinearities import sigmoid, softmax
+
+
+def get_gen_celebA(nz=100):
+
 	gen = InputLayer(shape=(None,nz))
 	gen = DenseLayer(incoming=gen, num_units=1024*4*4)
 	gen = reshape(incoming=gen, shape=(-1,1024,4,4))
@@ -40,24 +62,7 @@ def get_gen_celebA(nz=100):
 	return gen
 
 def get_dis_celebA(nz=100):
-	"""
-	Discriminative network adapted for the CelebA database
 
-	The discriminative network is composed of deconvolution layers. 
-	It takes in input an image (4D tensor).
-	It returns a probability (float from 0 to 1). 
-
-	Parameters
-	----------
-	nz: int 
-		Number of variables in the latent space
-
-	Returns
-	--------
-	dis: class 'layer' instance or tuple
-		Return the discriminative network 
-
-	"""
 	dis = InputLayer(shape=(None,3,64,64))
 	dis = batch_norm(Conv2DLayer(incoming=dis, num_filters=128, filter_size=5,stride=2, nonlinearity=lrelu(0.2),pad=2))
 	dis = batch_norm(Conv2DLayer(incoming=dis, num_filters=256, filter_size=5,stride=2, nonlinearity=lrelu(0.2),pad=2))
@@ -68,24 +73,7 @@ def get_dis_celebA(nz=100):
 	return dis
 
 def get_gen_mnist(nz=100):
-	"""
-	Generative network adapted for the MNIST database
 
-	The generative network is composed of deconvolution layers. 
-	It takes in input a variable from the latent space (matrix).
-	It returns an image (4D tensor). 
-
-	Parameters
-	----------
-	nz: int 
-		Number of variables in the latent space
-
-	Returns
-	---------
-	gen: class 'Layer' instance or a tuple
-		Return the generative network 
-
-	"""
 	gen = InputLayer(shape=(None,nz))
 	gen = DenseLayer(incoming=gen, num_units=512*2*2)
 	gen = reshape(incoming=gen, shape=(-1,512,2,2))
@@ -97,24 +85,7 @@ def get_gen_mnist(nz=100):
 	return gen
 
 def get_dis_mnist(nz=100):
-	"""
-	Discriminative network adapted for the MNIST database
 
-	The discriminative network is composed of deconvolution layers. 
-	It takes in input an image (4D tensor).
-	It returns a probability (float from 0 to 1). 
-
-	Parameters
-	----------
-	nz: int 
-		Number of variables in the latent space
-
-	Returns
-	--------
-	dis: class 'layer' instance or tuple
-		Return the discriminative network 
-
-	"""
 	dis = InputLayer(shape=(None,1,28,28))
 	dis = batch_norm(Conv2DLayer(incoming=dis, num_filters=64, filter_size=5,stride=2, nonlinearity=lrelu(0.2),pad=2))
 	dis = batch_norm(Conv2DLayer(incoming=dis, num_filters=128, filter_size=5,stride=2, nonlinearity=lrelu(0.2),pad=2))
@@ -124,6 +95,57 @@ def get_dis_mnist(nz=100):
 	dis = DenseLayer(incoming=dis, num_units=1, nonlinearity=sigmoid)
 	return dis
 
+
+################################### wgan Nets ##################################
+
+	"""
+	generative and discriminative networks are the globally the same than the ones used for dcgan. 
+	The only exception is that, because the loss function of a WGAN is not a bce, the last layer shouldn't have any nonlinearity.
+	"""
+
+def get_wgen_celebA(nz=100):
+
+	gen = InputLayer(shape=(None,nz))
+	gen = DenseLayer(incoming=gen, num_units=1024*4*4)
+	gen = reshape(incoming=gen, shape=(-1,1024,4,4))
+	gen = batch_norm(Deconv2DLayer(incoming=gen, num_filters=512, filter_size=4, stride=2, nonlinearity=relu, crop=1))
+	gen = batch_norm(Deconv2DLayer(incoming=gen, num_filters=256, filter_size=4, stride=2, nonlinearity=relu, crop=1))
+	gen = batch_norm(Deconv2DLayer(incoming=gen, num_filters=128, filter_size=4, stride=2, nonlinearity=relu, crop=1))
+	gen = Deconv2DLayer(incoming=gen, num_filters=3, filter_size=4, stride=2, nonlinearity=None, crop=1)
+	return gen
+
+def get_wdis_celebA(nz=100):
+
+	dis = InputLayer(shape=(None,3,64,64))
+	dis = batch_norm(Conv2DLayer(incoming=dis, num_filters=128, filter_size=5,stride=2, nonlinearity=lrelu(0.2),pad=2))
+	dis = batch_norm(Conv2DLayer(incoming=dis, num_filters=256, filter_size=5,stride=2, nonlinearity=lrelu(0.2),pad=2))
+	dis = batch_norm(Conv2DLayer(incoming=dis, num_filters=512, filter_size=5,stride=2, nonlinearity=lrelu(0.2),pad=2)) 
+	dis = batch_norm(Conv2DLayer(incoming=dis, num_filters=1024, filter_size=5,stride=2, nonlinearity=lrelu(0.2),pad=2)) 
+	dis = reshape(incoming=dis, shape=(-1,1024*4*4))
+	dis = DenseLayer(incoming=dis, num_units=1, nonlinearity=None)
+	return dis
+
+def get_wgen_mnist(nz=100):
+
+	gen = InputLayer(shape=(None,nz))
+	gen = DenseLayer(incoming=gen, num_units=512*2*2)
+	gen = reshape(incoming=gen, shape=(-1,512,2,2))
+	gen = batch_norm(Deconv2DLayer(incoming=gen, num_filters=256, filter_size=4, stride=2, nonlinearity=relu, crop=1))
+	gen = batch_norm(Deconv2DLayer(incoming=gen, num_filters=128, filter_size=3, stride=2, nonlinearity=relu, crop=1))
+	gen = batch_norm(Deconv2DLayer(incoming=gen, num_filters=64, filter_size=4, stride=2, nonlinearity=relu, crop=1))
+	gen = Deconv2DLayer(incoming=gen, num_filters=1, filter_size=4, stride=2, nonlinearity=None, crop=1)
+	return gen
+
+def get_wdis_mnist(nz=100):
+
+	dis = InputLayer(shape=(None,1,28,28))
+	dis = batch_norm(Conv2DLayer(incoming=dis, num_filters=64, filter_size=5,stride=2, nonlinearity=lrelu(0.2),pad=2))
+	dis = batch_norm(Conv2DLayer(incoming=dis, num_filters=128, filter_size=5,stride=2, nonlinearity=lrelu(0.2),pad=2))
+	dis = batch_norm(Conv2DLayer(incoming=dis, num_filters=256, filter_size=3,stride=2, nonlinearity=lrelu(0.2),pad=1))
+	dis = batch_norm(Conv2DLayer(incoming=dis, num_filters=512, filter_size=5,stride=2, nonlinearity=lrelu(0.2),pad=2))
+	dis = reshape(incoming=dis, shape=(-1,512*2*2))
+	dis = DenseLayer(incoming=dis, num_units=1, nonlinearity=None)
+	return dis
 
 ################################## cAAE Nets ##################################
 
