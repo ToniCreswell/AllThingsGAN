@@ -271,7 +271,7 @@ def train(nz=100, lr=0.0002, batchSize=64, epoch=10, outDir='../Experiment/bigan
 	plt.xlabel('epoch')
 	plt.savefig(os.path.join(outDir,'cost_regular.png'))
 
-	return train_fns, test_fns, G, D
+	return train_fns, test_fns, G, E, D
 
 
 if __name__ == '__main__':
