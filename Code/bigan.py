@@ -1,12 +1,10 @@
 """
 Bidirectional Generative Adversarial Networks adapted for the CelebA and MNIST database.
 Trains three adversarial networks: generator, encoder & discriminator 
-	to produce fake but real-looking images and to learn their low dimensional representation.
-
+to produce fake but real-looking images and to learn their low dimensional representation.
 """
 
-from lasagne.layers import InputLayer, DenseLayer, Conv2DLayer, Deconv2DLayer, \
-flatten, reshape, batch_norm, Upscale2DLayer
+from lasagne.layers import InputLayer, DenseLayer, Conv2DLayer, Deconv2DLayer, flatten, reshape, batch_norm, Upscale2DLayer
 from lasagne.nonlinearities import rectify as relu
 from lasagne.nonlinearities import LeakyRectify as lrelu
 from lasagne.nonlinearities import sigmoid
@@ -103,8 +101,8 @@ def prep_train(lr=0.0002, nz=100):
 	G,E,D=build_net(nz=nz)
 
 	### preparing symbolic variables for each network
-   x_enc = T.tensor4('x_enc')
-   x = T.tensor4('x')
+	x_enc = T.tensor4('x_enc')
+	x = T.tensor4('x')
 	z_gen = T.matrix('z_gen')  
 	z = T.matrix('z') 
 	target_enc = T.matrix('target_enc')
@@ -246,21 +244,21 @@ def train(nz=100, lr=0.0002, batchSize=64, epoch=10, outDir='../Experiment/bigan
 			imgs_ = predict_generator(Z[b*batchSize:(b+1)*batchSize]).astype('float32')
 			imgs = xTrain[b*batchSize:(b+1)*batchSize].astype('float32')
 			Z_ = predict_encoder(imgs).astype('float32')
-         valid = np.ones((batches, 1)).astype('float32')
-         fake = np.zeros((batches, 1)).astype('float32')
+      	valid = np.ones((batches, 1)).astype('float32')
+      	fake = np.zeros((batches, 1)).astype('float32')
 
-         cost_D_real = train_fns['dis'](z_, imgs, valid)
-         cost_D_fake = train_fns['dis'](z, imgs_, fake)
-         cost_D = 0.5 * np.add(cost_D_real, cost_D_fake)
+      	cost_D_real = train_fns['dis'](z_, imgs, valid)
+      	cost_D_fake = train_fns['dis'](z, imgs_, fake)
+      	cost_D = 0.5 * np.add(cost_D_real, cost_D_fake)
 
-         cost_G = train_fns['gen'](Z,valid)    
-         cost_E = train_fns['enc'](imgs,fake)    
-
-			print e,'\t',b,'\t',cost_G,'\t', cost_E,'\t', cost_D,'\t', time.time()-timer
-			timer=time.time()
-			g_cost.append(cost_G)
-			d_cost.append(cost_D)
-			e_cost.append(cost_E)
+      	cost_G = train_fns['gen'](Z,valid)    
+      	cost_E = train_fns['enc'](imgs,fake)
+			
+			# print e,'\t',b,'\t',cost_G,'\t', cost_E,'\t', cost_D,'\t', time.time()-timer
+			# timer=time.time()
+			# g_cost.append(cost_G)
+			# d_cost.append(cost_D)
+			# e_cost.append(cost_E)
 
 
 	#save plot of the cost
