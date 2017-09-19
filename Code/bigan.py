@@ -118,7 +118,10 @@ def prep_train(lr=0.0002, nz=100):
 	D_gen = get_output(D,inputs={x_dis:x_gen,z_dis:z_gen})
 	D_dis = get_output(D,inputs={x_dis:x,z_dis:z})
 
-	samples=get_output(G,z,deterministic=True)
+	### test functions
+	samples_gen=get_output(G,z_gen,deterministic=True)
+	samples_z=get_output(E,x_enc,deterministic=True)
+	samples_enc = get_output(G,samples_z, deterministic=True)
 
 	### loss function
 	J_E = bce(D_enc,target_enc).mean()
@@ -146,7 +149,9 @@ def prep_train(lr=0.0002, nz=100):
 
 	### test the generator
 	test_fns={}
-	test_fns['sample']=theano.function(inputs=[z_gen],outputs=samples)
+	test_fns['sample_gen']=theano.function(inputs=[z_gen],outputs=samples_gen)
+	test_fns['sample_enc']=theano.function(inputs=[x_enc],outputs=samples_enc)
+
 
 	return train_fns, test_fns, G, E, D
 
@@ -284,7 +289,7 @@ if __name__ == '__main__':
 		, outDir=opts.outDir)
 
 	# test the model by printing generated images
-	montage = eval_gen(test_fns['sample'], opts.nz, opts.outDir)
+	montage_gen = eval_gen(test_fns['sample_gen'], opts.nz, opts.outDir)
 
 
 
