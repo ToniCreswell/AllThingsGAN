@@ -43,7 +43,8 @@ All current networks to be used for the Adversarial Models
 
 	"""
 
-from lasagne.layers import InputLayer, DenseLayer, Conv2DLayer, Deconv2DLayer, flatten, reshape, batch_norm, Upscale2DLayer
+from lasagne.layers import InputLayer, DenseLayer, Conv2DLayer, Deconv2DLayer, flatten, \
+reshape, batch_norm, Upscale2DLayer, dropout, concat
 from lasagne.nonlinearities import rectify as relu
 from lasagne.nonlinearities import LeakyRectify as lrelu
 from lasagne.nonlinearities import sigmoid, softmax
@@ -58,7 +59,6 @@ def get_gen_celebA(nz=100):
 	gen = batch_norm(Deconv2DLayer(incoming=gen, num_filters=256, filter_size=4, stride=2, nonlinearity=relu, crop=1))
 	gen = batch_norm(Deconv2DLayer(incoming=gen, num_filters=128, filter_size=4, stride=2, nonlinearity=relu, crop=1))
 	gen = Deconv2DLayer(incoming=gen, num_filters=3, filter_size=4, stride=2, nonlinearity=sigmoid, crop=1)
-
 	return gen
 
 def get_dis_celebA(nz=100):
@@ -81,7 +81,6 @@ def get_gen_mnist(nz=100):
 	gen = batch_norm(Deconv2DLayer(incoming=gen, num_filters=128, filter_size=3, stride=2, nonlinearity=relu, crop=1))
 	gen = batch_norm(Deconv2DLayer(incoming=gen, num_filters=64, filter_size=4, stride=2, nonlinearity=relu, crop=1))
 	gen = Deconv2DLayer(incoming=gen, num_filters=1, filter_size=4, stride=2, nonlinearity=sigmoid, crop=1)
-
 	return gen
 
 def get_dis_mnist(nz=100):
@@ -146,6 +145,95 @@ def get_wdis_mnist(nz=100):
 	dis = reshape(incoming=dis, shape=(-1,512*2*2))
 	dis = DenseLayer(incoming=dis, num_units=1, nonlinearity=None)
 	return dis
+
+################################### bidirectional gan Nets ############################
+
+	"""
+	The generative network is the same than the one used for dcgan. 
+	an encoder network is added, and is used to collude with the generetor in order to fool the discriminator.
+	The discriminator concatenates two inputs: the image (resized) and its lower representation.
+	Because the network is massive, dropout layers have been added. 
+	"""
+
+def get_bigan_gen_celebA(nz=100):
+	# latent code --> image
+    z_gen = InputLayer(shape=(None,nz))
+    gen = batch_norm(DenseLayer(incoming=z_gen, num_units=1024*4*4, nonlinearity = lrelu(0.2)))
+    gen = batch_norm(Reshape(incoming=gen, shape=(-1,1024,4,4)))
+    gen = batch_norm(Deconv2DLayer(incoming=gen, num_filters=512, filter_size=4, stride=2, nonlinearity=lrelu(0.2), crop=1))
+    gen = batch_norm(Deconv2DLayer(incoming=gen, num_filters=256, filter_size=4, stride=2, nonlinearity=lrelu(0.2), crop=1))
+    gen = batch_norm(Deconv2DLayer(incoming=gen, num_filters=128, filter_size=4, stride=2, nonlinearity=lrelu(0.2), crop=1))
+    gen = Deconv2DLayer(incoming=gen, num_filters=3, filter_size=4, stride=2, crop=1, nonlinearity=sigmoid)
+    return gen
+
+def get_bigan_enc_celebA(nz=100):
+	# image --> latent code
+    x_enc = InputLayer(shape=(None,3,64,64))
+    enc = batch_norm(Conv2DLayer(incoming = x_enc, num_filters = 128, filter_size = 5, stride = 2, pad = 2, nonlinearity = lrelu(0.2)))
+    enc = batch_norm(Pool(incoming = enc, pool_size = 2, stride=None, pad=(0, 0), ignore_border=True, mode='average_exc_pad'))
+    enc = batch_norm(Conv2DLayer(incoming = enc, num_filters = 256, filter_size = 5, stride = 2, pad = 2, nonlinearity = lrelu(0.2)))
+    enc = batch_norm(Pool(incoming = enc, pool_size = 2, stride=None, pad=(0, 0), ignore_border=True, mode='average_exc_pad'))
+    enc = Conv2DLayer(incoming = enc, num_filters = 512, filter_size = 5, stride = 2, pad = 2, nonlinearity = sigmoid)
+    enc = flatten(incoming = enc, outdim = 2)
+    enc = DenseLayer(incoming=enc, num_units=nz, nonlinearity= None)
+    return enc
+
+def get_bigan_dis_celebA(nz=100):
+	# (latent code, image) --> probability of being fake/true
+    z_dis = InputLayer(shape=(None,nz))
+    x_dis = InputLayer(shape=(None,3,64,64))
+    x_dis = batch_norm(Conv2DLayer(incoming = x_dis, num_filters=32, filter_size = 5, stride = 2, pad = 2, nonlinearity = lrelu(0.2)))
+    x_dis = dropout(incoming = batch_norm(Conv2DLayer(incoming = x_dis, num_filters=64, filter_size = 5, stride = 2, pad = 2, nonlinearity = lrelu(0.2))), p=0.2)
+    x_dis = dropout(incoming = batch_norm(Conv2DLayer(incoming = x_dis, num_filters=128, filter_size = 5, stride = 2, pad = 2, nonlinearity = lrelu(0.2))), p=0.2)
+    x_dis = dropout(incoming = batch_norm(Conv2DLayer(incoming = x_dis, num_filters=256, filter_size = 5, stride = 2, pad = 2, nonlinearity = lrelu(0.2))), p=0.2)
+    x_dis = batch_norm(flatten(incoming = x_dis, outdim = 2))
+    x_dis = batch_norm(DenseLayer(incoming = x_dis, num_units = nz, nonlinearity = None))    
+    dis = concat(incomings = [z_dis, flatten(incoming = x_dis, outdim = 2)], axis=-1, cropping=None)
+    dis = dropout(incoming = DenseLayer(incoming = dis, num_units = 512, nonlinearity = lrelu(0.2)),p=0.25)
+    dis = dropout(incoming = DenseLayer(incoming = dis, num_units = 512, nonlinearity = lrelu(0.2)),p=0.25)
+    dis = DenseLayer(incoming = dis, num_units = 1, nonlinearity = sigmoid)
+    return dis
+
+
+
+def get_bigan_gen_mnist(nz=100):
+	# latent code --> image
+    z_gen = InputLayer(shape=(None,nz))
+    gen = batch_norm(DenseLayer(incoming=z_gen, num_units=1024*2*2, nonlinearity = lrelu(0.2)))
+    gen = batch_norm(Reshape(incoming=gen, shape=(-1,1024,2,2)))
+    gen = batch_norm(Deconv2DLayer(incoming=gen, num_filters=512, filter_size=4, stride=2, nonlinearity=lrelu(0.2), crop=1))
+    gen = batch_norm(Deconv2DLayer(incoming=gen, num_filters=256, filter_size=4, stride=2, nonlinearity=lrelu(0.2), crop=1))
+    gen = batch_norm(Deconv2DLayer(incoming=gen, num_filters=128, filter_size=4, stride=2, nonlinearity=lrelu(0.2), crop=1))
+    gen = Deconv2DLayer(incoming=gen, num_filters=1, filter_size=4, stride=2, crop=3, nonlinearity=sigmoid)
+    return gen
+
+def get_bigan_enc_mnist(nz=100):
+	# image --> latent code
+    x_enc = InputLayer(shape=(None,1,28,28))
+    enc = batch_norm(Conv2DLayer(incoming = x_enc, num_filters = 128, filter_size = 4, stride = 2, pad = 3, nonlinearity = lrelu(0.2)))
+    enc = batch_norm(Pool(incoming = enc, pool_size = 2, stride=None, pad=(0, 0), ignore_border=True, mode='average_exc_pad'))
+    enc = batch_norm(Conv2DLayer(incoming = enc, num_filters = 256, filter_size = 4, stride = 2, pad = 1, nonlinearity = lrelu(0.2)))
+    enc = batch_norm(Pool(incoming = enc, pool_size = 2, stride=None, pad=(0, 0), ignore_border=True, mode='average_exc_pad'))
+    enc = Conv2DLayer(incoming = enc, num_filters = 512, filter_size = 4, stride = 2, pad = 1, nonlinearity = sigmoid)
+    enc = flatten(incoming = enc, outdim = 2)
+    enc = DenseLayer(incoming=enc, num_units=nz, nonlinearity= None)
+    return enc
+
+def get_bigan_dis_mnist(nz=100):
+	# (latent code, image) --> probability of being fake/true
+    z_dis = InputLayer(shape=(None,nz))
+    x_dis = InputLayer(shape=(None,1,28,28))
+    x_dis = batch_norm(Conv2DLayer(incoming = x_dis, num_filters=16, filter_size = 4, stride = 2, pad = 3, nonlinearity = lrelu(0.2)))
+    x_dis = batch_norm(Conv2DLayer(incoming = x_dis, num_filters=32, filter_size = 5, stride = 2, pad = 2, nonlinearity = lrelu(0.2)))
+    x_dis = batch_norm(Conv2DLayer(incoming = x_dis, num_filters=64, filter_size = 5, stride = 2, pad = 2, nonlinearity = lrelu(0.2)))
+    x_dis = batch_norm(Conv2DLayer(incoming = x_dis, num_filters=128, filter_size = 5, stride = 2, pad = 2, nonlinearity = lrelu(0.2)))
+    x_dis = batch_norm(Conv2DLayer(incoming = x_dis, num_filters=256, filter_size = 5, stride = 2, pad = 2, nonlinearity = lrelu(0.2)))
+    x_dis = batch_norm(flatten(incoming = x_dis, outdim = 2))
+    x_dis = batch_norm(DenseLayer(incoming = x_dis, num_units = nz, nonlinearity = None))    
+    dis = concat(incomings = [z_dis, flatten(incoming = x_dis, outdim = 2)], axis=-1, cropping=None)
+    dis = dropout(incoming = DenseLayer(incoming = dis, num_units = 512, nonlinearity = lrelu(0.2)),p=0.5)
+    dis = DenseLayer(incoming = dis, num_units = 1, nonlinearity = sigmoid)
+    return dis
 
 ################################## cAAE Nets ##################################
 
