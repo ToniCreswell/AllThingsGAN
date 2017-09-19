@@ -244,24 +244,24 @@ def train(nz=100, lr=0.0002, batchSize=64, epoch=10, outDir='../Experiment/bigan
 			imgs_ = predict_generator(Z[b*batchSize:(b+1)*batchSize]).astype('float32')
 			imgs = xTrain[b*batchSize:(b+1)*batchSize].astype('float32')
 			Z_ = predict_encoder(imgs).astype('float32')
-      	valid = np.ones((batches, 1)).astype('float32')
-      	fake = np.zeros((batches, 1)).astype('float32')
+	      	valid = np.ones((batches, 1)).astype('float32')
+	      	fake = np.zeros((batches, 1)).astype('float32')
 
-      	cost_D_real = train_fns['dis'](z_, imgs, valid)
-      	cost_D_fake = train_fns['dis'](z, imgs_, fake)
-      	cost_D = 0.5 * np.add(cost_D_real, cost_D_fake)
+	      	cost_D_real = train_fns['dis'](z_, imgs, valid)
+	      	cost_D_fake = train_fns['dis'](z, imgs_, fake)
+	      	cost_D = 0.5 * np.add(cost_D_real, cost_D_fake)
 
-      	cost_G = train_fns['gen'](Z,valid)    
-      	cost_E = train_fns['enc'](imgs,fake)
+	      	cost_G = train_fns['gen'](Z,valid)    
+	      	cost_E = train_fns['enc'](imgs,fake)
 			
-			# print e,'\t',b,'\t',cost_G,'\t', cost_E,'\t', cost_D,'\t', time.time()-timer
-			# timer=time.time()
-			# g_cost.append(cost_G)
-			# d_cost.append(cost_D)
-			# e_cost.append(cost_E)
+			print e,'\t',b,'\t',cost_G,'\t', cost_E,'\t', cost_D,'\t', time.time()-timer
+			timer=time.time()
+			g_cost.append(cost_G)
+			d_cost.append(cost_D)
+			e_cost.append(cost_E)
 
 
-	#save plot of the cost
+	save plot of the cost
 	plt.plot(range(batches*epoch),g_cost, label="G")
 	plt.plot(range(batches*epoch),d_cost, label="D")
 	plt.plot(range(batches*epoch),e_cost, label="E")
