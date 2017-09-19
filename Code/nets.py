@@ -4,47 +4,47 @@ All current networks to be used for the Adversarial Models
 
 ################################## dcgan Nets ##################################
 
-	"""
-	Generative network adapted for the CelebA/MNIST database
+"""
+Generative network adapted for the CelebA/MNIST database
 
-	The generative network is composed of deconvolution layers. 
-	It takes in input a variable from the latent space (matrix).
-	It returns an image (4D tensor). 
+The generative network is composed of deconvolution layers. 
+It takes in input a variable from the latent space (matrix).
+It returns an image (4D tensor). 
 
-	Parameters
-	----------
-	nz: int 
-		Number of variables in the latent space
+Parameters
+----------
+nz: int 
+	Number of variables in the latent space
 
-	Returns
-	---------
-	gen: class 'Layer' instance or a tuple
-		Return the generative network 
-
-	
-	*							*							*
+Returns
+---------
+gen: class 'Layer' instance or a tuple
+	Return the generative network 
 
 
-	Discriminative network adapted for the CelebA/MNIST database
+*							*							*
 
-	The discriminative network is composed of deconvolution layers. 
-	It takes in input an image (4D tensor).
-	It returns a probability (float from 0 to 1). 
 
-	Parameters
-	----------
-	nz: int 
-		Number of variables in the latent space
+Discriminative network adapted for the CelebA/MNIST database
 
-	Returns
-	--------
-	dis: class 'layer' instance or tuple
-		Return the discriminative network 
+The discriminative network is composed of deconvolution layers. 
+It takes in input an image (4D tensor).
+It returns a probability (float from 0 to 1). 
 
-	"""
+Parameters
+----------
+nz: int 
+	Number of variables in the latent space
+
+Returns
+--------
+dis: class 'layer' instance or tuple
+	Return the discriminative network 
+
+"""
 
 from lasagne.layers import InputLayer, DenseLayer, Conv2DLayer, Deconv2DLayer, flatten, \
-reshape, batch_norm, Upscale2DLayer, dropout, concat
+reshape, batch_norm, Upscale2DLayer, dropout, concat, Pool2DLayer
 from lasagne.nonlinearities import rectify as relu
 from lasagne.nonlinearities import LeakyRectify as lrelu
 from lasagne.nonlinearities import sigmoid, softmax
@@ -159,7 +159,7 @@ def get_bigan_gen_celebA(nz=100):
 	# latent code --> image
     z_gen = InputLayer(shape=(None,nz))
     gen = batch_norm(DenseLayer(incoming=z_gen, num_units=1024*4*4, nonlinearity = lrelu(0.2)))
-    gen = batch_norm(Reshape(incoming=gen, shape=(-1,1024,4,4)))
+    gen = batch_norm(reshape(incoming=gen, shape=(-1,1024,4,4)))
     gen = batch_norm(Deconv2DLayer(incoming=gen, num_filters=512, filter_size=4, stride=2, nonlinearity=lrelu(0.2), crop=1))
     gen = batch_norm(Deconv2DLayer(incoming=gen, num_filters=256, filter_size=4, stride=2, nonlinearity=lrelu(0.2), crop=1))
     gen = batch_norm(Deconv2DLayer(incoming=gen, num_filters=128, filter_size=4, stride=2, nonlinearity=lrelu(0.2), crop=1))
@@ -170,9 +170,9 @@ def get_bigan_enc_celebA(nz=100):
 	# image --> latent code
     x_enc = InputLayer(shape=(None,3,64,64))
     enc = batch_norm(Conv2DLayer(incoming = x_enc, num_filters = 128, filter_size = 5, stride = 2, pad = 2, nonlinearity = lrelu(0.2)))
-    enc = batch_norm(Pool(incoming = enc, pool_size = 2, stride=None, pad=(0, 0), ignore_border=True, mode='average_exc_pad'))
+    enc = batch_norm(Pool2DLayer(incoming = enc, pool_size = 2, stride=None, pad=(0, 0), ignore_border=True, mode='average_exc_pad'))
     enc = batch_norm(Conv2DLayer(incoming = enc, num_filters = 256, filter_size = 5, stride = 2, pad = 2, nonlinearity = lrelu(0.2)))
-    enc = batch_norm(Pool(incoming = enc, pool_size = 2, stride=None, pad=(0, 0), ignore_border=True, mode='average_exc_pad'))
+    enc = batch_norm(Pool2DLayer(incoming = enc, pool_size = 2, stride=None, pad=(0, 0), ignore_border=True, mode='average_exc_pad'))
     enc = Conv2DLayer(incoming = enc, num_filters = 512, filter_size = 5, stride = 2, pad = 2, nonlinearity = sigmoid)
     enc = flatten(incoming = enc, outdim = 2)
     enc = DenseLayer(incoming=enc, num_units=nz, nonlinearity= None)
@@ -200,7 +200,7 @@ def get_bigan_gen_mnist(nz=100):
 	# latent code --> image
     z_gen = InputLayer(shape=(None,nz))
     gen = batch_norm(DenseLayer(incoming=z_gen, num_units=1024*2*2, nonlinearity = lrelu(0.2)))
-    gen = batch_norm(Reshape(incoming=gen, shape=(-1,1024,2,2)))
+    gen = batch_norm(reshape(incoming=gen, shape=(-1,1024,2,2)))
     gen = batch_norm(Deconv2DLayer(incoming=gen, num_filters=512, filter_size=4, stride=2, nonlinearity=lrelu(0.2), crop=1))
     gen = batch_norm(Deconv2DLayer(incoming=gen, num_filters=256, filter_size=4, stride=2, nonlinearity=lrelu(0.2), crop=1))
     gen = batch_norm(Deconv2DLayer(incoming=gen, num_filters=128, filter_size=4, stride=2, nonlinearity=lrelu(0.2), crop=1))
@@ -211,9 +211,9 @@ def get_bigan_enc_mnist(nz=100):
 	# image --> latent code
     x_enc = InputLayer(shape=(None,1,28,28))
     enc = batch_norm(Conv2DLayer(incoming = x_enc, num_filters = 128, filter_size = 4, stride = 2, pad = 3, nonlinearity = lrelu(0.2)))
-    enc = batch_norm(Pool(incoming = enc, pool_size = 2, stride=None, pad=(0, 0), ignore_border=True, mode='average_exc_pad'))
+    enc = batch_norm(Pool2DLayer(incoming = enc, pool_size = 2, stride=None, pad=(0, 0), ignore_border=True, mode='average_exc_pad'))
     enc = batch_norm(Conv2DLayer(incoming = enc, num_filters = 256, filter_size = 4, stride = 2, pad = 1, nonlinearity = lrelu(0.2)))
-    enc = batch_norm(Pool(incoming = enc, pool_size = 2, stride=None, pad=(0, 0), ignore_border=True, mode='average_exc_pad'))
+    enc = batch_norm(Pool2DLayer(incoming = enc, pool_size = 2, stride=None, pad=(0, 0), ignore_border=True, mode='average_exc_pad'))
     enc = Conv2DLayer(incoming = enc, num_filters = 512, filter_size = 4, stride = 2, pad = 1, nonlinearity = sigmoid)
     enc = flatten(incoming = enc, outdim = 2)
     enc = DenseLayer(incoming=enc, num_units=nz, nonlinearity= None)
