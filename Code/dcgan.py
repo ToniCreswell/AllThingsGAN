@@ -1,5 +1,5 @@
 """
-Deep Convolutional Generative Adversarial Networks adapted for the CelebA database.
+Deep Convolutional Generative Adversarial Networks adapted for the CelebA and MNIST database.
 Trains two adversarial networks (generator & discriminator) to produce fake but real-looking images.
 
 """
