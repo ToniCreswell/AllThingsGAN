@@ -59,9 +59,9 @@ def build_net(nz=100):
 	if opts.mnist:
 		gen = get_bigan_gen_mnist(nz = nz)
 		enc = get_bigan_enc_mnist(nz = nz)
-		dis = get_bigan_dis_mnist(nz = nz)
+		z_dis, x_dis, dis = get_bigan_dis_mnist(nz = nz)
 
-	return gen, enc, dis
+	return gen, enc, dis, z_dis, x_dis
 
 
 def prep_train(lr=0.0002, nz=100):
@@ -98,7 +98,7 @@ def prep_train(lr=0.0002, nz=100):
 
 	"""
 
-	G,E,D=build_net(nz=nz)
+	G,E,D, z_dis, x_dis=build_net(nz=nz)
 
 	### preparing symbolic variables for each network
 	x_enc = T.tensor4('x_enc')
@@ -124,7 +124,7 @@ def prep_train(lr=0.0002, nz=100):
 	### loss function
 	J_E = bce(D_enc,target_enc).mean()
 	J_G = bce(D_gen,target_gen).mean()
-	J_D = bce(D_dis,target).mean()
+	J_D = bce(D_dis,target_dis).mean()
 
 	### preparing the update
 	params_enc=get_all_params(E, trainable=True) 
@@ -277,7 +277,7 @@ if __name__ == '__main__':
 
 	#print the layers and their shape of the generator and discriminator
 	if opts.printLayers:
-		G,E,D=build_net(nz=opts.nz)
+		G,E,D, z_dis, x_dis=build_net(nz=opts.nz)
 		print_layers(G, nn_prefix='generator')
 		print_layers(E, nn_prefix='encoder')
 		print_layers(D, nn_prefix='discriminator')
