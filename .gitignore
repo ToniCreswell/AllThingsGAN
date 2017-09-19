@@ -1,0 +1,6 @@
+# pyc files
+*.pyc
+Code/*.pyc
+
+# mypy
+.mypy_cache/
