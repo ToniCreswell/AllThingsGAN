@@ -119,17 +119,17 @@ def prep_train(lr=0.0002, nz=100):
 	params_g=get_all_params(G, trainable=True)
 
     # compute cost
-    loss_d = - (D_x.mean() - D_G_z.mean()) 
-    loss_g = - D_G_z.mean() 
+	loss_d = - (D_x.mean() - D_G_z.mean()) 
+	loss_g = - D_G_z.mean() 
 
     # update 
-    update_d = rmsprop(loss_d,params_d,learning_rate = alpha) 
-    update_g = rmsprop(loss_g,params_g,learning_rate = alpha) 
+	update_d = rmsprop(loss_d,params_d,learning_rate = alpha) 
+	update_g = rmsprop(loss_g,params_g,learning_rate = alpha) 
 
     # clip all the weights # W=GlorotUniform() in dis - first conv layer
-    params=get_all_param_values(D, trainable=True)
-    w_clip= [np.clip(w, -0.01, 0.01) for  w in params]
-    set_all_param_values(D,w_clip, trainable=True)
+	params=get_all_param_values(D, trainable=True)
+	w_clip= [np.clip(w, -0.01, 0.01) for  w in params]
+	set_all_param_values(D,w_clip, trainable=True)
 
 	#theano train functions
 	train_fns={}
