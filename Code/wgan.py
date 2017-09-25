@@ -9,9 +9,9 @@ flatten, reshape, batch_norm, Upscale2DLayer
 from lasagne.nonlinearities import rectify as relu
 from lasagne.nonlinearities import LeakyRectify as lrelu
 from lasagne.nonlinearities import sigmoid
-from lasagne.layers import get_output, get_all_params, get_output_shape, get_all_layers
+from lasagne.layers import get_output, get_all_params, get_output_shape, get_all_layers, get_all_param_values, set_all_param_values
 from lasagne.objectives import binary_crossentropy as bce
-from lasagne.updates import adam, sgd
+from lasagne.updates import adam, sgd, rmsprop
 
 import numpy as np
 import theano
@@ -114,6 +114,7 @@ def prep_train(lr=0.0002, nz=100):
 	# test samples
 	samples=get_output(G,z,deterministic=True)
 
+	print 'get all params'
 	#Get parameters of G and D
 	params_d=get_all_params(D, trainable=True)
 	params_g=get_all_params(G, trainable=True)
@@ -123,18 +124,23 @@ def prep_train(lr=0.0002, nz=100):
 	loss_g = - D_G_z.mean() 
 
     # update 
-	update_d = rmsprop(loss_d,params_d,learning_rate = alpha) 
-	update_g = rmsprop(loss_g,params_g,learning_rate = alpha) 
+	update_d = rmsprop(loss_d,params_d,learning_rate = lr) 
+	update_g = rmsprop(loss_g,params_g,learning_rate = lr) 
 
+	print 'getting weights'
     # clip all the weights # W=GlorotUniform() in dis - first conv layer
 	params=get_all_param_values(D, trainable=True)
 	w_clip= [np.clip(w, -0.01, 0.01) for  w in params]
 	set_all_param_values(D,w_clip, trainable=True)
 
+	print 'obtained weights'
+
 	#theano train functions
 	train_fns={}
-	train_fns['gen']=theano.function(inputs=[z], outputs=J_G, updates=update_G)
-	train_fns['dis']=theano.function(inputs=[x,z], outputs=J_D, updates=update_D)
+	train_fns['gen']=theano.function(inputs=[z], outputs=loss_g, updates=update_g)
+	train_fns['dis']=theano.function(inputs=[x,z], outputs=loss_d, updates=update_d)
+
+	print 'train_fns'
 
 	#theano test functions
 	test_fns={}
@@ -142,7 +148,7 @@ def prep_train(lr=0.0002, nz=100):
 
 	return train_fns, test_fns, G, D
 
-def train(nz=100, lr=0.0002, batchSize=64, epoch=10, outDir='../Experiment/dcgan'):
+def train(nz=100, lr=0.0002, batchSize=64, epoch=10, outDir='../Experiment/wgan'):
 
 	"""
 	Trains the adversarial networks by batch for a certain number of epochs.
