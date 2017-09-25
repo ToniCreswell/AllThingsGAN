@@ -6,7 +6,7 @@ You will find the code for:
 * DCGAN: Deep Convolutional Generative Adversarial Networks
 * BiGAN: Bidirectional Generative Adversarial Networks
 * WGAN: Wasserstein Generative Adversarial Networks
-* DAAE: Denoising Adversarial Autoencoders
+* CAAE: Conditional Adversarial Autoencoders
 
 ## Prerequisites
 You will need to install a virtual environment containing:
