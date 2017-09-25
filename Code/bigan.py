@@ -4,6 +4,7 @@ Trains three adversarial networks: generator, encoder & discriminator
 to produce fake but real-looking images and to learn their low dimensional representation.
 """
 
+import lasagne
 from lasagne.layers import InputLayer, DenseLayer, Conv2DLayer, Deconv2DLayer, flatten, reshape, batch_norm, Upscale2DLayer
 from lasagne.nonlinearities import rectify as relu
 from lasagne.nonlinearities import LeakyRectify as lrelu
@@ -31,6 +32,8 @@ import os
 floatX=theano.config.floatX
 
 
+
+
 def build_net(nz=100):
 	"""
 	Get the structure of the generator (gen) and the discriminator (dis) adapted for CelebA or for MNIST
@@ -52,19 +55,24 @@ def build_net(nz=100):
 		Structure of the discriminator. Takes in input an image and returns a probability.
 	"""
 	if opts.celeba:
-		gen = get_bigan_gen_celebA(nz = nz)
-		enc = get_bigan_enc_celebA(nz = nz)
-		dis = get_bigan_dis_celebA(nz = nz)
+		input_gen, gen = get_bigan_gen_celebA(nz = nz)
+		input_enc, enc = get_bigan_enc_celebA(nz = nz)
+		z_dis, x_dis, dis = get_bigan_dis_celebA(nz = nz)
 
 	if opts.mnist:
-		gen = get_bigan_gen_mnist(nz = nz)
-		enc = get_bigan_enc_mnist(nz = nz)
+		input_gen, gen = get_bigan_gen_mnist(nz = nz)
+		input_enc, enc = get_bigan_enc_mnist(nz = nz)
 		z_dis, x_dis, dis = get_bigan_dis_mnist(nz = nz)
 
-	return gen, enc, dis, z_dis, x_dis
+	return input_gen, gen, input_enc, enc, dis, z_dis, x_dis
 
 
 def prep_train(lr=0.0002, nz=100):
+
+	optimizer = adam
+	learning_rate = lr
+	beta1 = 0.5
+
 
 	"""
 	Update the parameters of the network using gradient descent w.r.t. the loss function.
@@ -98,7 +106,15 @@ def prep_train(lr=0.0002, nz=100):
 
 	"""
 
-	G,E,D, z_dis, x_dis=build_net(nz=nz)
+	input_gen, G, input_enc, E,D, z_dis, x_dis= build_net(nz=nz)
+
+
+	#print(the layers and their shape of the generator and discriminator)
+	if opts.printLayers:
+		print_layers(G, nn_prefix='generator')
+		print_layers(E, nn_prefix='encoder')
+		print_layers(D, nn_prefix='discriminator')
+
 
 	### preparing symbolic variables for each network
 	x_enc = T.tensor4('x_enc')
@@ -110,8 +126,8 @@ def prep_train(lr=0.0002, nz=100):
 	target_dis = T.matrix('target_dis')
 
 	### compute output of the network
-	z_enc = get_output(E, inputs={x_enc:x_enc})
-	x_gen = get_output(G, inputs={z_gen:z_gen})
+	z_enc = get_output(E, inputs={input_enc:x_enc})
+	x_gen = get_output(G, inputs={input_gen:z_gen})
 	D_enc = get_output(D,inputs={x_dis:x_enc,z_dis:z_enc})
 	D_gen = get_output(D,inputs={x_dis:x_gen,z_dis:z_gen})
 	D_dis = get_output(D,inputs={x_dis:x,z_dis:z})
@@ -132,8 +148,8 @@ def prep_train(lr=0.0002, nz=100):
 	params_dis=get_all_params(D, trainable=True) 
 
 	grad_enc=T.grad(J_E,params_enc)
-	grad_dis=T.grad(J_D,params_dis)
 	grad_gen=T.grad(J_G,params_gen)
+	grad_dis=T.grad(J_D,params_dis)
 
 	update_E = optimizer(grad_enc,params_enc,learning_rate = learning_rate,beta1=beta1)
 	update_D = optimizer(grad_dis,params_dis,learning_rate = learning_rate,beta1=beta1)
@@ -151,17 +167,17 @@ def prep_train(lr=0.0002, nz=100):
 	test_fns['sample_enc']=theano.function(inputs=[x_enc],outputs=samples_enc)
 
 
-	return train_fns, test_fns, G, E, D
+	return train_fns, test_fns, G, E, D, input_gen, input_enc
 
-def predict_generator(z):
-  return get_output(generator, inputs={z_gen:z}).eval()
+def predict_generator(G,input_gen,z):
+  return get_output(G, inputs={input_gen:z}).eval()
 
-def predict_encoder(x):
-  return get_output(encoder, inputs={x_enc:x}).eval()
+def predict_encoder(E,input_enc,x):
+  return get_output(E, inputs={input_enc:x}).eval()
 
 
 
-def train(nz=100, lr=0.0002, batchSize=64, epoch=10, outDir='../Experiment/bigan'):
+def train(nz=100, lr=0.0002, batchSize=2, epoch=10, outDir='../Experiment/bigan'):
 
 	"""
 	Trains the adversarial networks by batch for a certain number of epochs.
@@ -221,9 +237,9 @@ def train(nz=100, lr=0.0002, batchSize=64, epoch=10, outDir='../Experiment/bigan
 		xTrain = load_CelebA()
 	if opts.mnist : 
 		xTrain,_,_,_,_,_ = load_MNIST()
-	print 'Images for training -- shape:{}, min:{}, max:{} '.format(np.shape(xTrain), np.min(xTrain), np.max(xTrain))
+	print('Images for training -- shape:{}, min:{}, max:{} '.format(np.shape(xTrain), np.min(xTrain), np.max(xTrain)))
 
-	train_fns, test_fns, G, E, D = prep_train(nz=nz, lr=lr)
+	train_fns, test_fns, G, E, D, input_gen, input_enc = prep_train(nz=nz, lr=lr)
 
 	sn,sc,sx,sy=np.shape(xTrain)
 	batches=int(np.floor(float(sn)/batchSize))
@@ -235,33 +251,37 @@ def train(nz=100, lr=0.0002, batchSize=64, epoch=10, outDir='../Experiment/bigan
 
 	timer=time.time()
 	#Train D (outerloop)
-	print 'epoch \t batch \t cost G \t cost E \t cost D \t time (s)'
+	print('epoch \t batch \t cost G \t cost E \t cost D \t time (s)')
 	for e in range(epoch):
 		#Do for all batches
 		for b in range(batches):
-
 			Z = np.random.normal(loc=0.0, scale=1.0, size=(sn,nz)).astype(floatX) 
-			imgs_ = predict_generator(Z[b*batchSize:(b+1)*batchSize]).astype('float32')
-			imgs = xTrain[b*batchSize:(b+1)*batchSize].astype('float32')
-			Z_ = predict_encoder(imgs).astype('float32')
-	      	valid = np.ones((batches, 1)).astype('float32')
-	      	fake = np.zeros((batches, 1)).astype('float32')
-
-	      	cost_D_real = train_fns['dis'](z_, imgs, valid)
-	      	cost_D_fake = train_fns['dis'](z, imgs_, fake)
-	      	cost_D = 0.5 * np.add(cost_D_real, cost_D_fake)
-
-	      	cost_G = train_fns['gen'](Z,valid)    
-	      	cost_E = train_fns['enc'](imgs,fake)
 			
+			z = Z[b*batchSize:(b+1)*batchSize]
+			imgs_ = predict_generator(G,input_gen,z).astype(floatX)
+		
+
+			imgs = xTrain[b*batchSize:(b+1)*batchSize].astype(floatX)
+			z_ = predict_encoder(E,input_enc,imgs).astype(floatX)
+			
+
+			valid = np.ones((batchSize, 1)).astype(floatX)
+			fake = np.zeros((batchSize, 1)).astype(floatX)
+
+			cost_D_real = train_fns['dis'](z_, imgs, valid)
+			cost_D_fake = train_fns['dis'](z, imgs_, fake)
+			cost_D = 0.5 * np.add(cost_D_real, cost_D_fake)
+			cost_G = train_fns['gen'](z,valid)[0]
+			cost_E = train_fns['enc'](imgs,fake)[0]
+			
+
 			print e,'\t',b,'\t',cost_G,'\t', cost_E,'\t', cost_D,'\t', time.time()-timer
 			timer=time.time()
 			g_cost.append(cost_G)
 			d_cost.append(cost_D)
 			e_cost.append(cost_E)
 
-
-	save plot of the cost
+	#save plot of the cost
 	plt.plot(range(batches*epoch),g_cost, label="G")
 	plt.plot(range(batches*epoch),d_cost, label="D")
 	plt.plot(range(batches*epoch),e_cost, label="E")
@@ -274,13 +294,6 @@ def train(nz=100, lr=0.0002, batchSize=64, epoch=10, outDir='../Experiment/bigan
 
 if __name__ == '__main__':
 	opts = get_args()
-
-	#print the layers and their shape of the generator and discriminator
-	if opts.printLayers:
-		G,E,D, z_dis, x_dis=build_net(nz=opts.nz)
-		print_layers(G, nn_prefix='generator')
-		print_layers(E, nn_prefix='encoder')
-		print_layers(D, nn_prefix='discriminator')
 
 	#train the adversarial network 
 	train_fns, test_fns, G, E, D = train(nz=opts.nz, lr=opts.lr, batchSize=opts.batchSize, epoch=opts.maxEpochs \
